@@ -1,6 +1,7 @@
 # -----------------------------------------------------------------------------
 # 6. Export functions - merge_video_audio (Automated)
 # File: decoder.py
+# Not ready! No errors thats good :)
 # -----------------------------------------------------------------------------
 import argparse
 import subprocess
