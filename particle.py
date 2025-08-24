@@ -1,10 +1,11 @@
+# -----------------------------------------------------------------------------
+# 4. Visualizer Effects - class Particle 
+# File: particle.py
+# -----------------------------------------------------------------------------
 import pygame
 import random
 import math
 
-# -----------------------------------------------------------------------------
-# 4. Visualizer Effects - class Particle in particle.py
-# -----------------------------------------------------------------------------
 class Particle:
     def __init__(self, x, y, vx=0, vy=0, life=60, color=(255, 255, 255)):
         self.x, self.y = x, y
