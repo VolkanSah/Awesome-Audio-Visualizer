@@ -1,32 +1,40 @@
-# detector.py run first this script it will generate your system file, it will be needed for the main funktion
+# a simple tool for detection stuff, later more features but so  its easier for devlop and system 
+# specks so the system dont needt to scan all time and sou dont need to change always all   stuuf!
 import sys
 import subprocess
 import json
 import os
 
+def find_ffmpeg():
+    # Attempt to find ffmpeg using system commands
+    if sys.platform == "win32":
+        try:
+            # `where` command for Windows
+            result = subprocess.run(['where', 'ffmpeg'], capture_output=True, text=True, check=True)
+            return result.stdout.strip().split('\n')[0] # get the first path found
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return None
+    else: # Linux or macOS
+        try:
+            # `which` command for Linux/macOS
+            result = subprocess.run(['which', 'ffmpeg'], capture_output=True, text=True, check=True)
+            return result.stdout.strip()
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return None
+
 def run_system_check():
     report = {}
-    report['os'] = sys.platform
-    report['python_version'] = sys.version
-    report['dependencies'] = {}
+    # ... (other checks) ...
 
-    # Check for core dependencies
-    deps = ['pygame', 'numpy', 'pyaudio', 'librosa']
-    for dep in deps:
-        try:
-            __import__(dep)
-            report['dependencies'][dep] = {'installed': True, 'version': 'N/A'} # You can add version check here later
-        except ImportError:
-            report['dependencies'][dep] = {'installed': False, 'version': None}
-
-    # Check for FFmpeg
-    try:
-        subprocess.run(['ffmpeg', '-version'], check=True, capture_output=True)
+    # Find and save the absolute path of FFmpeg
+    ffmpeg_path = find_ffmpeg()
+    if ffmpeg_path:
+        report['ffmpeg_path'] = ffmpeg_path
         report['ffmpeg_status'] = 'found'
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    else:
+        report['ffmpeg_path'] = None
         report['ffmpeg_status'] = 'not_found'
     
-    # Write report to JSON file
     with open('system_report.json', 'w') as f:
         json.dump(report, f, indent=4)
         
