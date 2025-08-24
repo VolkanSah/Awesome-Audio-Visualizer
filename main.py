@@ -38,7 +38,6 @@ from fileprocessor import FileProcessor
 # -----------------------------------------------------------------------------------------------
 # 3. Management and UI Components : class SettingsManager, UIManager in mui.py
 # -----------------------------------------------------------------------------------------------
-import mui
 from mui import SettingsManager , UIManager , ScreenshotManager
 # -----------------------------------------------------------------------------
 # 4. Visualizer Effects - class Particle in particle.py
