@@ -2,7 +2,6 @@ import pygame
 import os
 from datetime import datetime
 import tkinter
-import requests
 
 # -----------------------------------------------------------------------------------------------
 # 3. Management and UI Components : class SettingsManager, UIManage, ScreenshotManager in mui.py
