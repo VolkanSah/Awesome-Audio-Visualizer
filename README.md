@@ -22,6 +22,9 @@ Der Visualizer bietet fünf einzigartige visuelle Modi, zwischen denen du einfac
 * **Beat Explosion**: Bei jedem erkannten Beat wird eine Partikelexplosion ausgelöst, begleitet von schnell pulsierenden Balken.
 * **Matrix Rain**: Ein an den Film „Matrix“ angelehnter Effekt, bei dem fallende Symbole in Intensität und Farbe auf Audio-Eingaben reagieren.
 
+So aufgebaut das due ganz einfach eigene Modis bauen kannst auch ihne viel wissen, zeige die modie deiner Lieblings KI und sie ändert sie für dich um die klassen sollten nur gleich sein! 
+Für die Profis unter euch, viel spass, nehme auch coole ideen in dem Projekt gerne auf, wichtig ist mir nur das es opensource bleibt und nicht ein aufgeblähter müll wird!
+
 ### Farbpaletten
 
 Für jeden Visualisierungsmodus stehen fünf anpassbare Farbpaletten zur Verfügung:
