@@ -58,6 +58,7 @@ Die Steuerung des Programms erfolgt intuitiv über die Tastatur. Hier ist eine �
 | `TAB` | **Einstellungen** | Zeigt ein Menü an, um erweiterte Einstellungen zu ändern. |
 | `D` | **Geräte-Menü** | Öffnet ein Menü zur Auswahl des Audio-Eingabegeräts. (Nur im Live-Modus). |
 | `Q`/`W` | **Beat-Empfindlichkeit** | Passt die Empfindlichkeit der Beat-Erkennung an. (Nur im Live-Modus). |
+| `R` | **Export** | Exportiert Visualisierung + Audio als MP4 . (nicht im Live-Modus). |
 | `ESC` | **Beenden/Schließen** | Beendet das Programm oder schließt das aktive Einstellungs-/Geräte-Menü. |
 
 ---
