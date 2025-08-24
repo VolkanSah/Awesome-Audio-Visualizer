@@ -1,12 +1,13 @@
+# -----------------------------------------------------------------------------
+# 2. Audio FileProcessor: class FileProcessor 
+# File: fileprocessor.py
+# -----------------------------------------------------------------------------
 import pygame
 import numpy as np
 import librosa
 import threading
 import os
 
-# -----------------------------------------------------------------------------
-# 2. Audio FileProcessor: class FileProcessor in fileprocessor.py
-# -----------------------------------------------------------------------------
 class FileProcessor:
     def __init__(self):
         pygame.mixer.init()
