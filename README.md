@@ -2,6 +2,8 @@
 
 Willkommen bei **Awesome-Audio-Visualizer**, einem Open-Source-Tool, das Audio in faszinierende visuelle Effekte verwandelt. Dieses Projekt wurde aus der Leidenschaft heraus geboren, einen anpassbaren und skalierbaren Visualizer zu erschaffen, der sich nicht nur für persönliche Musik, sondern auch für Videos und Live-Streams eignet.
 
+Ich sags direk kein Apple support! läuft angeblich drauf aber echt mir scheiß egal! 
+
 
 
 ## 💡 Warum dieses Projekt?
