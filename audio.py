@@ -1,3 +1,8 @@
+# -----------------------------------------------------------------------------
+# 1. Audio Component:  class AudioDeviceManager, AudioProcessor 
+# File: audio.py
+# -----------------------------------------------------------------------------
+
 import pyaudio
 import numpy as np
 import threading
@@ -5,10 +10,8 @@ import threading
 # In audio.py
 from collections import deque
 
-# ... rest of your code ...
-# -----------------------------------------------------------------------------
-# 1. Audio Component:  class AudioDeviceManager, AudioProcessor in audio.py
-# -----------------------------------------------------------------------------
+# ... rest of code ...?
+
 class AudioDeviceManager:
     def __init__(self):
         self.p = pyaudio.PyAudio()
