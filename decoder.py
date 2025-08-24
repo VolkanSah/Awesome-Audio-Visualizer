@@ -1,4 +1,7 @@
-# decoder.py
+# -----------------------------------------------------------------------------
+# 6. Export functions - merge_video_audio , merge_video_audio 
+# File: decoder.py
+# -----------------------------------------------------------------------------
 import argparse
 import subprocess
 import os
