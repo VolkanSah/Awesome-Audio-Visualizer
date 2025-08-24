@@ -27,7 +27,6 @@ import wave
 
 
 # import dependence
-# Note:  await loading ! do not forget! Volkan! 
 # -----------------------------------------------------------------------------
 # 1. Audio Component:  class AudioDeviceManager, AudioProcessor in audio.py
 # -----------------------------------------------------------------------------
