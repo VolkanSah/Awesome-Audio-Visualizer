@@ -1,11 +1,13 @@
+# -----------------------------------------------------------------------------------------------
+# 3. Management and UI Components : class SettingsManager, UIManage, ScreenshotManager 
+# File: mui.py
+# -----------------------------------------------------------------------------------------------
 import pygame
 import os
 from datetime import datetime
 import tkinter
 
-# -----------------------------------------------------------------------------------------------
-# 3. Management and UI Components : class SettingsManager, UIManage, ScreenshotManager in mui.py
-# -----------------------------------------------------------------------------------------------
+
 class SettingsManager:
     def __init__(self):
         self.show_fps = True
