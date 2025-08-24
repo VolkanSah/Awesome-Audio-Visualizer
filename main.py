@@ -1,6 +1,7 @@
 # -----------------------------------------------------------------------------
 #     Awesome-Audio-Visualizer 1.0.1 by Volkan Sah
 # -----------------------------------------------------------------------------
+
 import pygame
 import os
 import sys
@@ -43,19 +44,6 @@ from mui import SettingsManager , UIManager , ScreenshotManager
 # 4. Visualizer Effects - class Particle in particle.py
 # -----------------------------------------------------------------------------
 from particle import Particle
-# -----------------------------------------------------------------------------
-# import dependence end start main app core below
-# -----------------------------------------------------------------------------
-# 
-# -----------------------------------------------------------------------------
-# 5. Main Visualizer Class - class HotVisualizer in main.py (this file!)
-# -----------------------------------------------------------------------------
-
-# -----------------------------------------------------------------------------
-# 4. Visualizer Effects - class Particle in particle.py
-# -----------------------------------------------------------------------------
-from particle import Particle
-# -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 # 6. Export functions - merge_video_audio , merge_video_audio in decoder.py
 # -----------------------------------------------------------------------------
@@ -461,7 +449,7 @@ class ExportManager:
             frame = pygame.surfarray.array3d(screen)
             frame = np.transpose(frame, (1, 0, 2))
             
-            # Du könntest hier auch np.rot90(np.flipud(frame)) verwenden.
+            # önntest hier auch np.rot90(np.flipud(frame)) verwenden.
             # Transpose sollte bei 3D-Arrays schneller sein.
             
             self.video_process.stdin.write(frame.tobytes())
