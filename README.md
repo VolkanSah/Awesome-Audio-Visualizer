@@ -77,8 +77,9 @@ Das Projekt ist in mehrere Komponenten aufgeteilt, um die Übersichtlichkeit zu 
 * `fileprocessor.py`: Kümmert sich um das Laden und Analysieren von Audiodateien mit der Klasse **`FileProcessor`**.
 * `mui.py`: Enthält UI-relevante Logik wie Einstellungen, Menüs und Screenshot-Funktionalität mit den Klassen **`SettingsManager`**, **`UIManager`**, und **`ScreenshotManager`**.
 * `particle.py`: Definiert die **`Particle`**-Klasse, die für die Partikeleffekte im Beat Explosion-Modus verwendet wird.
+* `detector.py`: Definiert in der   **`system_report.json`** die benötigten FFmpeg Pfade je nach system um nicht jedesmal das system scanen zu müssen oder am code rumzuspielen, der detector muss als erstes genutzt werden um die datei zu erstellen, sonst ist kein export der daten möglich
 * `decoder.py`: Definiert die **`merge_video_audio`** nicht fertig!. in main.py eingebunden schon Shorcode nutzbar aber kein effekt!
-* `detector.py`: Definiert in der   **`system_report.json`** die benötigten FFmpeg Pfade je nach system um nicht jedesmal das system scanen zu müssen oder am code rumzuspielen, der detector muss als erstes genutzt werden um die datei zu erstellen, sonst ist kein export der daten möglich 
+
 
 
 
