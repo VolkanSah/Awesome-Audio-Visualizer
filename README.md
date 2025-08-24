@@ -2,13 +2,13 @@
 
 Willkommen bei **Awesome-Audio-Visualizer**, einem Open-Source-Tool, das Audio in faszinierende visuelle Effekte verwandelt. Dieses Projekt wurde aus der Leidenschaft heraus geboren, einen anpassbaren und skalierbaren Visualizer zu erschaffen, der sich nicht nur für persönliche Musik, sondern auch für Videos und Live-Streams eignet.
 
----
+
 
 ## 💡 Warum dieses Projekt?
 
 Viele existierende Visualizer sind nicht frei zugänglich oder bieten nur begrenzte Anpassungsmöglichkeiten. Mein Ziel war es, ein Tool zu entwickeln, das einfach zu bedienen und gleichzeitig mächtig genug ist, um der Kreativität keine Grenzen zu setzen. Mit diesem Projekt kannst du deiner Musik eine visuelle Seele geben. Zukünftige Updates werden Features wie Video-Export und weitere einzigartige Effekte enthalten – ein K-Pop-Artefakt ist versprochen! 😉
 
----
+
 
 ## ✨ Features
 
@@ -78,7 +78,7 @@ Das Projekt ist in mehrere Komponenten aufgeteilt, um die Übersichtlichkeit zu 
 * `decoder.py`: Definiert die **`merge_video_audio`** nicht fertig!. in main.py eingebunden schon Shorcode nutzbar aber kein effekt!
 * `detector.py`: Definiert in der   **`system_report.json`** die benötigten FFmpeg Pfade je nach system um nicht jedesmal das system scanen zu müssen oder am code rumzuspielen, der detector muss als erstes genutzt werden um die datei zu erstellen, sonst ist kein export der daten möglich 
 
----
+
 
 ## ⚙️ Anforderungen
 
