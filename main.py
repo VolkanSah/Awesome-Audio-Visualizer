@@ -16,6 +16,11 @@ from tkinter import filedialog
 import librosa
 import librosa.display
 
+# new
+import subprocess
+from queue import Queue
+import wave
+
 
 # import dependence
 # Note:  await loading ! do not forget! Volkan! 
@@ -49,6 +54,11 @@ from particle import Particle
 # -----------------------------------------------------------------------------
 from particle import Particle
 # -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# 6. Export functions - merge_video_audio , merge_video_audio in decoder.py
+# -----------------------------------------------------------------------------
+from decoder import merge_video_audio , merge_video_audio
+# -----------------------------------------------------------------------------
 # import dependence end start main app core below
 # -----------------------------------------------------------------------------
 # 
@@ -70,6 +80,8 @@ class HotVisualizer:
         self.settings = SettingsManager()
         self.ui = UIManager(self.screen, self.font)
         self.screenshot_manager = ScreenshotManager()
+        # Neu: Initialisiere den Export-Manager
+        self.export_manager = ExportManager(self)
         
         # Visualizer State
         self.time = 0
@@ -270,6 +282,8 @@ class HotVisualizer:
                         else: running = False
                     elif event.key == pygame.K_TAB: self.ui.show_settings = not self.ui.show_settings; self.ui.show_device_menu = False
                     elif event.key == pygame.K_d: self.ui.show_device_menu = not self.ui.show_device_menu; self.ui.show_settings = False
+                    elif event.key == pygame.K_r: self.export_manager.start_recording()
+                    elif event.key == pygame.K_e: self.export_manager.stop_recording("my_awesome_visualizer_video.mp4")
                     elif event.key == pygame.K_SPACE and not self.ui.show_settings and not self.ui.show_device_menu: self.mode = (self.mode + 1) % len(self.mode_names)
                     elif event.key == pygame.K_c and not self.ui.show_settings and not self.ui.show_device_menu: self.color_palette_index = (self.color_palette_index + 1) % len(self.palettes)
                     elif event.key == pygame.K_f:
@@ -329,10 +343,14 @@ class HotVisualizer:
             
             self.ui.draw_device_menu(self.device_manager.devices, current_device_idx, 50, 50)
             self.ui.draw_settings_overlay(self.settings, self.audio_processor)
+
+            # HIER ist der richtige Platz, um den Frame für die Aufnahme zu senden
+            self.export_manager.capture_frame(self.screen)
             
             pygame.display.flip()
             self.clock.tick(60)
             self.time += 1
+            
 
         self.audio_processor.stop()
         if self.file_processor: self.file_processor.stop()
@@ -341,8 +359,163 @@ class HotVisualizer:
         sys.exit()
 
 
+# main.py
 
+# ... (Deine vorhandenen Imports und Klassen) ...
 
+# -----------------------------------------------------------------------------
+# 6. Export Manager
+# -----------------------------------------------------------------------------
+#import subprocess
+#import threading
+#from queue import Queue
+#import pyaudio
+#import wave
+
+class ExportManager:
+    def __init__(self, visualizer):
+        self.visualizer = visualizer
+        self.is_recording = False
+        self.video_thread = None
+        self.audio_thread = None
+        self.video_process = None
+        self.audio_file = None
+        self.temp_video_path = "temp_video.mp4"
+        self.temp_audio_path = "temp_audio.wav"
+        self.start_time = None
+        self.frame_count = 0
+
+    def start_recording(self, output_filename="export.mp4"):
+        if self.is_recording:
+            print("Export läuft bereits.")
+            return
+
+        print("Starte Export...")
+        self.is_recording = True
+        self.output_filename = output_filename
+        self.start_time = time.time()
+        self.frame_count = 0
+
+        # Starte den FFmpeg-Prozess für die Videoaufnahme
+        cmd = [
+            'ffmpeg', '-y',
+            '-f', 'rawvideo',
+            '-vcodec', 'rawvideo',
+            '-s', f'{self.visualizer.screen_width}x{self.visualizer.screen_height}',
+            '-pix_fmt', 'rgb24',
+            '-r', '60', # 60 FPS für das Video
+            '-i', '-',
+            '-an', # Vorerst ohne Audio
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            self.temp_video_path
+        ]
+        self.video_process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+        # Starte Audio-Thread
+        self.audio_thread = threading.Thread(target=self._record_audio_task)
+        self.audio_thread.daemon = True
+        self.audio_thread.start()
+        
+    def _record_audio_task(self):
+        """Separate thread to record audio to a temporary WAV file."""
+        try:
+            p = pyaudio.PyAudio()
+            audio_format = pyaudio.paInt16
+            channels = 2 # Stereo
+            rate = 44100
+            chunk = 1024
+            
+            stream = p.open(format=audio_format,
+                            channels=channels,
+                            rate=rate,
+                            input=True,
+                            frames_per_buffer=chunk)
+            
+            waveFile = wave.open(self.temp_audio_path, 'wb')
+            waveFile.setnchannels(channels)
+            waveFile.setsampwidth(p.get_sample_size(audio_format))
+            waveFile.setframerate(rate)
+
+            while self.is_recording:
+                data = stream.read(chunk, exception_on_overflow=False)
+                waveFile.writeframes(data)
+                
+            stream.stop_stream()
+            stream.close()
+            waveFile.close()
+            p.terminate()
+
+        except Exception as e:
+            print(f"Fehler bei Audio-Aufnahme: {e}")
+            self.is_recording = False
+
+    def capture_frame(self, screen):
+        """Sendet einen Frame an FFmpeg."""
+        if not self.is_recording or not self.video_process:
+            return
+        
+        try:
+            frame = pygame.surfarray.array3d(screen)
+            frame = np.transpose(frame, (1, 0, 2))
+            
+            # Du könntest hier auch np.rot90(np.flipud(frame)) verwenden.
+            # Transpose sollte bei 3D-Arrays schneller sein.
+            
+            self.video_process.stdin.write(frame.tobytes())
+            self.frame_count += 1
+            
+        except BrokenPipeError:
+            print("FFmpeg Pipe gebrochen. Beende Aufnahme.")
+            self.stop_recording()
+        except Exception as e:
+            print(f"Fehler beim Schreiben des Frames: {e}")
+            self.stop_recording()
+            
+    def stop_recording(self):
+        if not self.is_recording:
+            return
+
+        print("Beende Video- und Audio-Aufnahme...")
+        self.is_recording = False
+        
+        # Schließe Video-Pipe
+        if self.video_process:
+            self.video_process.stdin.close()
+            self.video_process.wait()
+
+        # Warte, bis der Audio-Thread fertig ist
+        if self.audio_thread:
+            self.audio_thread.join()
+
+        # Starte den Merger-Prozess in einem neuen Thread, um die UI nicht zu blockieren
+        merge_thread = threading.Thread(target=self._merge_files_task)
+        merge_thread.start()
+
+    def _merge_files_task(self):
+        """Task to merge video and audio in a separate thread."""
+        print("Starte den Merging-Prozess...")
+        
+        # Aufruf des externen decoder.py Skripts
+        cmd = [
+            sys.executable,  # Stellt sicher, dass das richtige Python-Executable verwendet wird
+            'decoder.py',
+            self.temp_video_path,
+            self.temp_audio_path,
+            self.output_filename
+        ]
+        
+        try:
+            subprocess.run(cmd, check=True)
+            print("Merging-Prozess abgeschlossen. Temporäre Dateien werden gelöscht.")
+        except subprocess.CalledProcessError as e:
+            print(f"Fehler beim Mergen: {e}")
+        
+        # Aufräumen
+        if os.path.exists(self.temp_video_path):
+            os.remove(self.temp_video_path)
+        if os.path.exists(self.temp_audio_path):
+            os.remove(self.temp_audio_path)
 
 
 if __name__ == "__main__":
