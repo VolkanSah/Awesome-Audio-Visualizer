@@ -1,107 +1,112 @@
 # 🎧 Awesome-Audio-Visualizer
 
-Willkommen bei **Awesome-Audio-Visualizer**, einem Open-Source-Tool, das Audio in faszinierende visuelle Effekte verwandelt. Dieses Projekt wurde aus der Leidenschaft heraus geboren, einen anpassbaren und skalierbaren Visualizer zu erschaffen, der sich nicht nur für persönliche Musik, sondern auch für Videos und Live-Streams eignet.
+Welcome to **Awesome-Audio-Visualizer**, an open-source tool that transforms audio into stunning visual effects.  
+This project was born from the passion to create a customizable and scalable visualizer that works not only for personal music but also for videos and live streams.
 
-Ich sags direk kein Apple support! läuft angeblich drauf aber echt mir scheiß egal! Am besten Linux, auf windows läuft auch aber Realtek +m FFMPEG + Windows, viel spass!
+⚠️ **No official Apple support!** It might run on macOS, but honestly, I don't care.  
+Best experience on **Linux**. Works on **Windows** too, but enjoy the combo of Realtek + FFMPEG + Windows. Good luck! 😏  
 
+---
 
+## 💡 Why this project?
 
-## 💡 Warum dieses Projekt?
+Most existing visualizers are either closed-source or offer limited customization. My goal was to build a tool that is easy to use yet powerful enough to unleash your creativity.  
+With this project, you can give your music a visual soul. Future updates will include features like video export and more unique effects – a **K-Pop artifact** is promised! 😉
 
-Viele existierende Visualizer sind nicht frei zugänglich oder bieten nur begrenzte Anpassungsmöglichkeiten. Mein Ziel war es, ein Tool zu entwickeln, das einfach zu bedienen und gleichzeitig mächtig genug ist, um der Kreativität keine Grenzen zu setzen. Mit diesem Projekt kannst du deiner Musik eine visuelle Seele geben. Zukünftige Updates werden Features wie Video-Export und weitere einzigartige Effekte enthalten – ein K-Pop-Artefakt ist versprochen! 😉
-
-
+---
 
 ## ✨ Features
 
-### Visuelle Effekte
+### Visual Effects
 
-Der Visualizer bietet fünf einzigartige visuelle Modi, zwischen denen du einfach wechseln kannst. Jeder Modus reagiert dynamisch auf deine Audio-Eingabe:
+The visualizer includes **five unique visual modes** that dynamically react to audio input:
 
-* **Circular Bars**: Visualisiert Audiofrequenzen als radiale Balken, die sich von einem zentralen Punkt ausdehnen.
-* **Waveform Tunnel**: Erzeugt einen 3D-Tunnel, dessen Form sich dynamisch an die Audio-Wellenform anpasst.
-* **Frequency Spiral**: Visualisiert die Frequenzdaten in Form einer leuchtenden, sich drehenden Spirale.
-* **Beat Explosion**: Bei jedem erkannten Beat wird eine Partikelexplosion ausgelöst, begleitet von schnell pulsierenden Balken.
-* **Matrix Rain**: Ein an den Film „Matrix“ angelehnter Effekt, bei dem fallende Symbole in Intensität und Farbe auf Audio-Eingaben reagieren.
+* **Circular Bars** – Displays audio frequencies as radial bars expanding from a central point.
+* **Waveform Tunnel** – Creates a 3D tunnel that morphs with the audio waveform.
+* **Frequency Spiral** – Visualizes frequency data as a glowing, rotating spiral.
+* **Beat Explosion** – Triggers particle explosions on every detected beat, with pulsing bars.
+* **Matrix Rain** – Inspired by *The Matrix*, falling symbols change intensity and color with the sound.
 
-So aufgebaut das due ganz einfach eigene Modis bauen kannst auch ihne viel wissen, zeige die modie deiner Lieblings KI und sie ändert sie für dich um die klassen sollten nur gleich sein! 
-Für die Profis unter euch, viel spass, nehme auch coole ideen in dem Projekt gerne auf, wichtig ist mir nur das es opensource bleibt und nicht ein aufgeblähter müll wird!
-
-### Farbpaletten
-
-Für jeden Visualisierungsmodus stehen fünf anpassbare Farbpaletten zur Verfügung:
-
-* `fire` 🔥
-* `electric` ⚡
-* `ocean` 🌊
-* `rainbow` 🌈
-* `neon` ✨
-
-### Audio-Steuerung
-
-Das Projekt unterstützt zwei Audio-Eingabemodi:
-
-* **Live-Modus**: Verarbeitet Audio-Eingaben von einem angeschlossenen Mikrofon oder einem Standard-Eingabegerät in Echtzeit.
-* **Datei-Modus**: Lädt und analysiert eine lokale Audiodatei (z. B. MP3, WAV), um visuelle Effekte zu erzeugen. Die Wiedergabe kann pausiert, fortgesetzt und gestoppt werden.
+Built so you can easily create your own modes without much knowledge. Show your favorite AI the structure and let it modify them.  
+For the pros – have fun! I’m open to cool ideas, as long as this project stays **open source** and doesn’t turn into bloated garbage.
 
 ---
 
-## ⌨️ Nutzung & Steuerung
+### Color Palettes
 
-Die Steuerung des Programms erfolgt intuitiv über die Tastatur. Hier ist eine Übersicht der wichtigsten Befehle:
+Each visualization mode supports five customizable color palettes:
 
-| Taste | Aktion | Beschreibung |
+* `fire` 🔥  
+* `electric` ⚡  
+* `ocean` 🌊  
+* `rainbow` 🌈  
+* `neon` ✨  
+
+---
+
+### Audio Control
+
+Two input modes supported:
+
+* **Live Mode** – Processes real-time audio input from a connected microphone or standard device.
+* **File Mode** – Loads and analyzes a local audio file (e.g., MP3, WAV) to generate visuals. Playback can be paused, resumed, or stopped.
+
+---
+
+## ⌨️ Controls
+
+The program is controlled via an intuitive keyboard interface:
+
+| Key | Action | Description |
 | :--- | :--- | :--- |
-| `SPACE` | **Modus wechseln** | Schaltet zwischen den 5 Visualisierungsmodi um. |
-| `C` | **Farbpalette wechseln** | Wechselt zur nächsten verfügbaren Farbpalette. |
-| `A` | **Audio-Datei laden** | Öffnet einen Dialog, um eine lokale Audiodatei zum Visualisieren auszuwählen. |
-| `L` | **Zurück in den Live-Modus** | Schaltet vom Datei-Modus zurück zur Live-Audio-Aufnahme. |
-| `P` | **Wiedergabe umschalten** | Startet oder pausiert die Wiedergabe einer geladenen Datei. (Nur im Datei-Modus). |
-| `K` | **Wiedergabe stoppen** | Stoppt die Wiedergabe einer Datei. (Nur im Datei-Modus). |
-| `F` | **Vollbild** | Schaltet zwischen Vollbild- und Fenstermodus um. |
-| `S` | **Screenshot** | Speichert einen Screenshot des aktuellen Visualizers. |
-| `TAB` | **Einstellungen** | Zeigt ein Menü an, um erweiterte Einstellungen zu ändern. |
-| `D` | **Geräte-Menü** | Öffnet ein Menü zur Auswahl des Audio-Eingabegeräts. (Nur im Live-Modus). |
-| `Q`/`W` | **Beat-Empfindlichkeit** | Passt die Empfindlichkeit der Beat-Erkennung an. (Nur im Live-Modus). |
-| `R` | **Export** | Exportiert Visualisierung + Audio als MP4 . (nicht im Live-Modus). | 
-| `ESC` | **Beenden/Schließen** | Beendet das Programm oder schließt das aktive Einstellungs-/Geräte-Menü. |
+| `SPACE` | **Switch Mode** | Cycles through the 5 visualization modes. |
+| `C` | **Change Color Palette** | Switches to the next available color palette. |
+| `A` | **Load Audio File** | Opens a dialog to choose a local audio file for visualization. |
+| `L` | **Back to Live Mode** | Switches from file mode to live audio input. |
+| `P` | **Play / Pause** | Starts or pauses playback of the loaded file. *(File mode only)* |
+| `K` | **Stop** | Stops file playback. *(File mode only)* |
+| `F` | **Fullscreen** | Toggles fullscreen mode. |
+| `S` | **Screenshot** | Saves a screenshot of the current visualizer. |
+| `TAB` | **Settings** | Opens an advanced settings menu. |
+| `D` | **Device Menu** | Select an audio input device. *(Live mode only)* |
+| `Q` / `W` | **Beat Sensitivity** | Adjusts beat detection sensitivity. *(Live mode only)* |
+| `R` | **Export** | Exports visualization + audio as MP4. *(Not available in live mode)* |
+| `ESC` | **Exit** | Closes the program or the active settings/device menu. |
 
 ---
 
-## 📂 Code-Struktur
+## 📂 Project Structure
 
-Das Projekt ist in mehrere Komponenten aufgeteilt, um die Übersichtlichkeit zu verbessern und die Wartung zu erleichtern:
+The project is modular for better organization and maintainability:
 
-* `main.py`: Enthält die Hauptlogik der Anwendung und die **`HotVisualizer`**-Klasse, die die Visualisierungseffekte rendert und die Benutzerinteraktion verwaltet.
-* `audio.py`: Verwaltet die Audio-Verarbeitung und Live-Audio-Streams über die Klassen **`AudioDeviceManager`** und **`AudioProcessor`**.
-* `fileprocessor.py`: Kümmert sich um das Laden und Analysieren von Audiodateien mit der Klasse **`FileProcessor`**.
-* `mui.py`: Enthält UI-relevante Logik wie Einstellungen, Menüs und Screenshot-Funktionalität mit den Klassen **`SettingsManager`**, **`UIManager`**, und **`ScreenshotManager`**.
-* `particle.py`: Definiert die **`Particle`**-Klasse, die für die Partikeleffekte im Beat Explosion-Modus verwendet wird.
-* `detector.py`: Definiert in der   **`system_report.json`** die benötigten FFmpeg Pfade je nach system um nicht jedesmal das system scanen zu müssen oder am code rumzuspielen, der detector muss als erstes genutzt werden um die datei zu erstellen, sonst ist kein export der daten möglich
-* `decoder.py`: Definiert die **`merge_video_audio`** nicht fertig!. in main.py eingebunden schon Shorcode nutzbar aber kein effekt!
+* `main.py` – Core logic and **`HotVisualizer`** class handling rendering and user interaction.
+* `audio.py` – Audio processing and live audio stream handling via **`AudioDeviceManager`** and **`AudioProcessor`**.
+* `fileprocessor.py` – Loads and analyzes audio files with the **`FileProcessor`** class.
+* `mui.py` – UI-related logic: settings, menus, screenshot functionality via **`SettingsManager`**, **`UIManager`**, **`ScreenshotManager`**.
+* `particle.py` – Defines the **`Particle`** class for the Beat Explosion mode.
+* `detector.py` – Generates **`system_report.json`** with required FFmpeg paths based on OS (must run first for export to work).
+* `decoder.py` – Defines **`merge_video_audio`** (not finished yet). Integrated in `main.py` with shortcode but no final effect.
 
+---
 
+## ⚙️ Requirements
 
-
-## ⚙️ Anforderungen
-
-Um das Projekt auszuführen, werden folgende Bibliotheken benötigt. Du kannst sie einfach mit `pip` installieren:
+Install the required dependencies via `pip`:
 
 ```bash
 pip install pygame numpy pyaudio librosa
 ````
 
-### Detaillierte Abhängigkeiten
+### Detailed Dependencies:
 
-**Erforderliche externe Bibliotheken:**
+* `pygame` – Graphics and window management.
+* `numpy` – Fast Fourier Transform (FFT) and array operations.
+* `pyaudio` – Live audio input handling.
+* `librosa` – Advanced audio analysis functions.
 
-  * `pygame` - für die Grafik und das Fenster-Management.
-  * `numpy` - für die schnelle Fourier-Transformation (FFT) und Array-Operationen.
-  * `pyaudio` - für die Verarbeitung von Live-Audio-Eingaben vom Mikrofon.
-  * `librosa` - für erweiterte Audio-Analysefunktionen.
+#### **Note about `pyaudio`:**
 
-**Hinweis zu `pyaudio`:**
-Manchmal kann es bei der Installation von `pyaudio` zu Problemen kommen. Hier sind alternative Installationsanweisungen für verschiedene Betriebssysteme:
+Installation may fail on some systems. Alternative steps:
 
 **Windows:**
 
@@ -124,21 +129,23 @@ brew install portaudio
 pip install pyaudio
 ```
 
-Sollten diese Schritte nicht funktionieren, kannst du stattdessen `sounddevice` verwenden:
+If issues persist, use:
 
 ```bash
 pip install sounddevice
 ```
 
------
+---
 
-## 🤝 Mitwirken
+## 🤝 Contributing
 
-Dieses Projekt ist Open Source. Ich freue mich über jede Unterstützung\! Ob Bug-Reports, Feature-Vorschläge oder Code-Beiträge – jeder Beitrag ist willkommen.
+This project is **open source**, and contributions are welcome!
+Bug reports, feature suggestions, and pull requests are highly appreciated.
 
------
+---
 
-## 📝 Lizenz
+## 📝 License
 
-Dieses Projekt ist unter der Apache 2-Lizenz lizenziert. Weitere Informationen findest du in der [LICENSE](LICENSE)-Datei.
+Licensed under **Apache 2.0**. See [LICENSE](LICENSE) for details.
+
 
