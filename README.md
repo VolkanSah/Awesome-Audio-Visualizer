@@ -58,7 +58,7 @@ Die Steuerung des Programms erfolgt intuitiv über die Tastatur. Hier ist eine �
 | `TAB` | **Einstellungen** | Zeigt ein Menü an, um erweiterte Einstellungen zu ändern. |
 | `D` | **Geräte-Menü** | Öffnet ein Menü zur Auswahl des Audio-Eingabegeräts. (Nur im Live-Modus). |
 | `Q`/`W` | **Beat-Empfindlichkeit** | Passt die Empfindlichkeit der Beat-Erkennung an. (Nur im Live-Modus). |
-| `R` | **Export** | Exportiert Visualisierung + Audio als MP4 . (nicht im Live-Modus). |
+| `R` | **Export** | Exportiert Visualisierung + Audio als MP4 . (nicht im Live-Modus). | 
 | `ESC` | **Beenden/Schließen** | Beendet das Programm oder schließt das aktive Einstellungs-/Geräte-Menü. |
 
 ---
@@ -72,6 +72,7 @@ Das Projekt ist in mehrere Komponenten aufgeteilt, um die Übersichtlichkeit zu 
 * `fileprocessor.py`: Kümmert sich um das Laden und Analysieren von Audiodateien mit der Klasse **`FileProcessor`**.
 * `mui.py`: Enthält UI-relevante Logik wie Einstellungen, Menüs und Screenshot-Funktionalität mit den Klassen **`SettingsManager`**, **`UIManager`**, und **`ScreenshotManager`**.
 * `particle.py`: Definiert die **`Particle`**-Klasse, die für die Partikeleffekte im Beat Explosion-Modus verwendet wird.
+* `decoder.py`: Definiert die **`merge_video_audio`** nicht fertig!. in main.py eingebunden schon Shorcode nutzbar aber kein effekt! 
 
 ---
 
