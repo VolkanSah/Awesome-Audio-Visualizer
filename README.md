@@ -8,7 +8,7 @@ This project was born from the passion to create a customizable and scalable vis
 
 
 
-## 💡 Why this project?
+#### 💡 Why this project?
 
 Most existing visualizers are either closed-source or offer limited customization. My goal was to build a tool that is easy to use yet powerful enough to unleash your creativity.  
 With this project, you can give your music a visual soul. Future updates will include features like video export and more unique effects – a **K-Pop artifact** is promised! 😉
