@@ -4,9 +4,9 @@ Welcome to **Awesome-Audio-Visualizer**, an open-source tool that transforms aud
 This project was born from the passion to create a customizable and scalable visualizer that works not only for personal music but also for videos and live streams.
 
 ⚠️ **No official Apple support!** It might run on macOS, but honestly, I don't care.  
-Best experience on **Linux**. Works on **Windows** too, but enjoy the combo of Realtek + FFMPEG + Windows. Good luck! 😏  
+> Best experience on **Linux**. Works on **Windows** too, but enjoy the combo of Realtek + FFMPEG + Windows. Good luck! 😏  
 
----
+
 
 ## 💡 Why this project?
 
