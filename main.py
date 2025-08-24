@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #     Awesome-Audio-Visualizer 1.0.1 by Volkan Sah
 # -----------------------------------------------------------------------------
-
+# https://github.com/VolkanSah/Awesome-Audio-Visualizer/
 import pygame
 import os
 import sys
