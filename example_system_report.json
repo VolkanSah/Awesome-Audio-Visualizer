@@ -1,4 +1,62 @@
 {
-    "ffmpeg_path": "C:\\ffmpeg\\bin\\ffmpeg.exe",
-    "ffmpeg_status": "found"
+    "system_info": {
+        "platform": "Windows",
+        "platform_version": "10.0.26100",
+        "architecture": "64bit",
+        "python_version": "3.12.3",
+        "timestamp": "2025-08-25T11:39:19.966810"
+    },
+    "workdir_check": {
+        "writable": true,
+        "path": "C:\\Users\\seomo\\Desktop\\gppgleapi\\Awesome-Audio-Visualizer-main",
+        "error": null
+    },
+    "ffmpeg": {
+        "path": "C:\\ffmpeg\\bin\\ffmpeg.exe",
+        "status": "found"
+    },
+    "audio_devices": {
+        "microphones": [
+            {
+                "name": "AMD High Definition Audio Device",
+                "description": "AMD High Definition Audio Device",
+                "type": "microphone",
+                "detection_method": "powershell_wmi"
+            },
+            {
+                "name": "AMD Streaming Audio Device",
+                "description": "AMD Streaming Audio Device",
+                "type": "microphone",
+                "detection_method": "powershell_wmi"
+            },
+            {
+                "name": "Realtek High Definition Audio",
+                "description": "Realtek High Definition Audio",
+                "type": "microphone",
+                "detection_method": "powershell_wmi"
+            }
+        ],
+        "all_audio_inputs": [
+            {
+                "name": "AMD High Definition Audio Device",
+                "description": "AMD High Definition Audio Device",
+                "type": "microphone",
+                "detection_method": "powershell_wmi"
+            },
+            {
+                "name": "AMD Streaming Audio Device",
+                "description": "AMD Streaming Audio Device",
+                "type": "microphone",
+                "detection_method": "powershell_wmi"
+            },
+            {
+                "name": "Realtek High Definition Audio",
+                "description": "Realtek High Definition Audio",
+                "type": "microphone",
+                "detection_method": "powershell_wmi"
+            }
+        ],
+        "detection_method": "powershell_wmi",
+        "error": "FFmpeg detection failed: stdout and stderr arguments may not be used with capture_output."
+    }
 }
