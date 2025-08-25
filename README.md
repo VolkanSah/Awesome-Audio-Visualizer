@@ -1,18 +1,18 @@
 # 🎧 Awesome-Audio-Visualizer
-
 Welcome to Awesome-Audio-Visualizer, an open-source tool that transforms audio into stunning visual effects.
-
 Born from passion, this project delivers a customizable and scalable visualizer that works for personal music, videos, and live streams.
 
 ### Why Pygame? Performance That Actually Works!
-
 This project showcases the **true power of Pygame** for modern desktop applications:
-- **60+ FPS** smooth visuals (while most audio visualizers struggle at 24-30 FPS)
-- **Native performance** without Electron bloat, memory leaks and other stupid shit!
-- **Real-time responsiveness** that web-based or Electron-Based tools simply can't match
-- **Pure Python power** - no JavaScript nonsense needed!
+- **60+ FPS** smooth visuals (while most audio visualizers crawl at 24-30 FPS)
+- **Native performance** without Electron bloat, memory leaks and startup delays
+- **Real-time responsiveness** that web-based tools simply can't deliver
+- **Pure Python power** - no JavaScript framework chaos needed!
 
-**Pygame isn't just for retro games!** It's the better framework for high-performance visual applications, scientific tools, and creative projects. Feel the difference of native desktop performance! 💪en! 
+**Pygame isn't just for retro games!** It's the superior framework for high-performance visual applications, scientific tools, and creative projects. 
+
+> **For real developers who value performance over convenience.** 
+> While others struggle with Electron memory issues, we deliver buttery-smooth 60+ FPS experiences. Feel the difference! 💪
 
 
 
