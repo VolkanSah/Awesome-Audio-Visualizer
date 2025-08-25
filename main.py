@@ -350,19 +350,11 @@ class HotVisualizer:
         pygame.quit()
         sys.exit()
 
-
-# main.py
-
-# ... (Deine vorhandenen Imports und Klassen) ...
-
 # -----------------------------------------------------------------------------
 # 6. Export Manager
 # -----------------------------------------------------------------------------
-#import subprocess
-#import threading
-#from queue import Queue
-#import pyaudio
-#import wave
+
+
 
 class ExportManager:
     def __init__(self, visualizer):
