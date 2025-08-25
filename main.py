@@ -120,7 +120,7 @@ class HotVisualizer:
             rgb = colorsys.hsv_to_rgb(h, s, v)
             return tuple(int(c * 255) for c in rgb)
         return (255, 255, 255)
-
+# ----------------------------------------  draw_mode _x easyl mod this sections or ad more! ---------------------------------------------
     def draw_mode_0_circular_bars(self, fft_data):
         center_x, center_y = self.screen_width // 2, self.screen_height // 2
         bars = 120
@@ -207,6 +207,8 @@ class HotVisualizer:
                     color = self.get_color(alpha / 255, self.palettes[self.color_palette_index])
                     text = self.ui.small_font.render(char, True, color)
                     self.screen.blit(text, (drop['x'], y))
+# ----------------------------------------  draw_mode _x end ---------------------------------------------
+# ----------------------------------------  update class Particles stored in particles.py ----------------
 
     def update_particles(self):
         self.particles = [p for p in self.particles if p.update()]
@@ -255,7 +257,8 @@ class HotVisualizer:
             
             text2 = pygame.font.Font(None, 20).render(controls2, True, (200, 200, 200))
             self.screen.blit(text2, (10, self.screen_height - 25))
-    
+# ----------------------------------------  end class Particles stored in particles.py ----------------
+
     def run(self):
         running = True
         fullscreen = False
