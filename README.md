@@ -115,7 +115,7 @@ The project is modular for better organization and maintainability:
 * `mui.py` – UI-related logic: settings, menus, screenshot functionality via **`SettingsManager`**, **`UIManager`**, **`ScreenshotManager`**.
 * `particle.py` – Defines the **`Particle`** class for the Beat Explosion mode.
 * `detector.py` – Generates **`system_report.json`** with required FFmpeg/Audio paths -needed- based on OS (must run first for export to work).
-* `decoder.py` – Defines **`merge_video_audio`** (not finished yet). Integrated in `main.py` with shortcode but no final effect.
+* `decoder.py` – Defines **`merge_video_audio`** (not finished yet). Integrated in `main.py` implemented, but bricked - merge problem.
 
 ---
 
