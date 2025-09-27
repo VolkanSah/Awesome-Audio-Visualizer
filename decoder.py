@@ -121,16 +121,20 @@ def merge_video_audio(video_path, audio_path, output_path=None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_path = f"{base}_merged_{timestamp}.mp4"
     
-    command = [
-        ffmpeg_path,
-        '-y',  # overwrite
-        '-i', video_path,
-        '-i', audio_path,
-        '-c:v', 'copy',
-        '-c:a', 'aac',
-        '-map', '0:v:0',
-        '-map', '1:a:0',
-        output_path
+    # VERBESSERTER FFmpeg-Command
+    cmd = [
+        'ffmpeg', '-y',
+        '-f', 'rawvideo',
+        '-vcodec', 'rawvideo',
+        '-s', f'{self.visualizer.screen_width}x{self.visualizer.screen_height}',
+        '-pix_fmt', 'rgb24',
+        '-r', '60',
+        '-i', '-',
+        '-c:v', 'libx264',
+        '-preset', 'fast',  # 'ultrafast' → 'fast' für bessere Qualität
+        '-crf', '18',       # Qualität hinzufügen (18 = sehr gut)
+        '-pix_fmt', 'yuv420p',  # Kompatibilität für alle Player
+        self.temp_video_path
     ]
     
     try:
