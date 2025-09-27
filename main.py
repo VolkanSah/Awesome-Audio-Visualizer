@@ -354,8 +354,6 @@ class HotVisualizer:
 # 6. Export Manager
 # -----------------------------------------------------------------------------
 
-
-
 class ExportManager:
     def __init__(self, visualizer):
         self.visualizer = visualizer
@@ -373,14 +371,22 @@ class ExportManager:
         if self.is_recording:
             print("Export läuft bereits.")
             return
-
+        
+        if self.visualizer.audio_mode != "file":
+            print("Export nur im File-Modus möglich!")
+            return
+        
+        if not self.visualizer.file_processor.file_path:
+            print("Kein Audio-File geladen!")
+            return
+        
         print("Starte Export...")
         self.is_recording = True
         self.output_filename = output_filename
         self.start_time = time.time()
         self.frame_count = 0
 
-    # VERBESSERTER FFmpeg-Command
+        # VERBESSERTER FFmpeg-Command
         cmd = [
             'ffmpeg', '-y',
             '-f', 'rawvideo',
@@ -395,9 +401,9 @@ class ExportManager:
             '-pix_fmt', 'yuv420p',  # Kompatibilität für alle Player
             self.temp_video_path
         ]
-    
+        
         print(f"🐛 FFmpeg Command: {' '.join(cmd)}")
-    
+        
         try:
             self.video_process = subprocess.Popen(
                 cmd, 
@@ -409,72 +415,78 @@ class ExportManager:
         except Exception as e:
             print(f"❌ FFmpeg-Start fehlgeschlagen: {e}")
             return
-    
+        
         # Starte Audio-Thread
         self.audio_thread = threading.Thread(target=self._record_audio_task)
         self.audio_thread.daemon = True
         self.audio_thread.start()
         
     def _record_audio_task(self):
-        """Separate thread to record audio to a temporary WAV file."""
+        """Audio vom geladenen File nehmen, nicht aufnehmen"""
         try:
-            p = pyaudio.PyAudio()
-            audio_format = pyaudio.paInt16
-            channels = 2 # Stereo
-            rate = 44100
-            chunk = 1024
-            
-            stream = p.open(format=audio_format,
-                            channels=channels,
-                            rate=rate,
-                            input=True,
-                            frames_per_buffer=chunk)
-            
-            waveFile = wave.open(self.temp_audio_path, 'wb')
-            waveFile.setnchannels(channels)
-            waveFile.setsampwidth(p.get_sample_size(audio_format))
-            waveFile.setframerate(rate)
-
-            while self.is_recording:
-                data = stream.read(chunk, exception_on_overflow=False)
-                waveFile.writeframes(data)
+            if (self.visualizer.audio_mode == "file" and 
+                self.visualizer.file_processor.file_path and 
+                os.path.exists(self.visualizer.file_processor.file_path)):
                 
-            stream.stop_stream()
-            stream.close()
-            waveFile.close()
-            p.terminate()
-
+                # Original-Audio-File direkt kopieren
+                import shutil
+                shutil.copy2(self.visualizer.file_processor.file_path, self.temp_audio_path)
+                print("Original-Audio für Export kopiert")
+            else:
+                print("Kein Audio-File verfügbar - erstelle stille Audio-Spur")
+                # Fallback: stille Audio-Datei erstellen
+                self._create_silent_audio()
+                
         except Exception as e:
-            print(f"Fehler bei Audio-Aufnahme: {e}")
-            self.is_recording = False
+            print(f"Audio-Export Fehler: {e}")
+            self._create_silent_audio()
+
+    def _create_silent_audio(self):
+        """Erstellt eine stille WAV-Datei als Fallback"""
+        import wave
+        with wave.open(self.temp_audio_path, 'wb') as wav_file:
+            wav_file.setnchannels(2)  # Stereo
+            wav_file.setsampwidth(2)  # 16-bit
+            wav_file.setframerate(44100)
+            # 10 Sekunden stille Audio
+            wav_file.writeframes(b'\x00' * (44100 * 2 * 2 * 10))
 
     def capture_frame(self, screen):
         """Sendet einen Frame an FFmpeg."""
         if not self.is_recording or not self.video_process:
             return
-    
+
+        # Auto-Stop wenn Audio fertig ist
+        if (self.visualizer.audio_mode == "file" and 
+            self.visualizer.file_processor.playback_state == "playing" and
+            not pygame.mixer.music.get_busy()):
+            
+            print("Audio beendet - stoppe Recording automatisch")
+            self.stop_recording()
+            return
+        
         try:
             # pygame Surface zu RGB-Array
             frame = pygame.surfarray.array3d(screen)
-        
+            
             # WICHTIG: pygame gibt (width, height, channels), FFmpeg braucht (height, width, channels)
             frame = frame.swapaxes(0, 1)  # Vertauscht width und height
-        
+            
             # Debug: Frame-Info ausgeben (nur beim ersten Frame)
             if self.frame_count == 0:
                 print(f"🐛 Frame shape: {frame.shape}")
                 print(f"🐛 Screen size: {screen.get_size()}")
                 print(f"🐛 Expected: ({self.visualizer.screen_height}, {self.visualizer.screen_width}, 3)")
-        
+            
             # Frame an FFmpeg senden
             self.video_process.stdin.write(frame.tobytes())
             self.frame_count += 1
-        
+            
             # Debug: Fortschritt alle 60 Frames (1 Sekunde bei 60 FPS)
             if self.frame_count % 60 == 0:
                 elapsed = time.time() - self.start_time
                 print(f"🎬 {self.frame_count} Frames aufgenommen ({elapsed:.1f}s)")
-        
+            
         except BrokenPipeError:
             print("❌ FFmpeg Pipe gebrochen. Beende Aufnahme.")
             self.stop_recording()
@@ -510,23 +522,27 @@ class ExportManager:
         cmd = [
             sys.executable,  # Stellt sicher, dass das richtige Python-Executable verwendet wird
             'decoder.py',
+            'merge',  # Das fehlte! decoder.py braucht den 'merge' subcommand
             self.temp_video_path,
             self.temp_audio_path,
-            self.output_filename
+            '--output', self.output_filename
         ]
         
         try:
-            subprocess.run(cmd, check=True)
-            print("Merging-Prozess abgeschlossen. Temporäre Dateien werden gelöscht.")
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            print("Merging-Prozess abgeschlossen.")
+            print(f"✅ Finale Datei: {self.output_filename}")
         except subprocess.CalledProcessError as e:
-            print(f"Fehler beim Mergen: {e}")
+            print(f"❌ Fehler beim Mergen: {e}")
+            print(f"Stderr: {e.stderr}")
         
         # Aufräumen
         if os.path.exists(self.temp_video_path):
             os.remove(self.temp_video_path)
+            print("Temp video gelöscht")
         if os.path.exists(self.temp_audio_path):
             os.remove(self.temp_audio_path)
-
+            print("Temp audio gelöscht")
 
 if __name__ == "__main__":
     visualizer = HotVisualizer()
