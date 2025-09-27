@@ -2,6 +2,8 @@
 Welcome to Awesome-Audio-Visualizer, an open-source tool that transforms audio into stunning visual effects.
 Born from passion, this project delivers a customizable and scalable visualizer that works for personal music, videos, and live streams.
 
+---
+
 ### Why Pygame? Performance That Actually Works!
 This project showcases the **true power of Pygame** for modern desktop applications:
 - **60+ FPS** smooth visuals (while most audio visualizers crawl at 24-30 FPS)
@@ -9,24 +11,41 @@ This project showcases the **true power of Pygame** for modern desktop applicati
 - **Real-time responsiveness** that web-based tools simply can't deliver
 - **Pure Python power** - no JavaScript framework chaos needed!
 
-**Pygame isn't just for retro games!** It's the superior framework for high-performance visual applications, scientific tools, and creative projects. 
+**Pygame isn't just for retro games!** It's the superior framework for high-performance visual applications, scientific tools, and creative projects.
 
-> **For real developers who value performance over convenience.** 
+> **For real developers who value performance over convenience.**
 > While others struggle with Electron memory issues, we deliver buttery-smooth 60+ FPS experiences. Feel the difference! 💪
 
-
-
 > [!WARNING]
-> **No official Apple support!** It might run on macOS, but honestly, I don't care.  
-> Best experience on **Linux**. Works on **Windows** too. 
-
-
-
+> **No official Apple support!** It might run on macOS, but honestly, I don't care.
+> Best experience on **Linux**. Works on **Windows** too.
 
 #### 💡 Why this project?
 
-Most existing visualizers are either closed-source or offer limited customization. My goal was to build a tool that is easy to use yet powerful enough to unleash your creativity.  
+Most existing visualizers are either closed-source or offer limited customization. My goal was to build a tool that is easy to use yet powerful enough to unleash your creativity.
 With this project, you can give your music a visual soul. Future updates will include features like video export and more unique effects – a **K-Pop artifact** is promised! 😉
+
+---
+
+## 🎨 Creative Freedom & Simple City Design
+
+Most visualization projects force artists to fight proprietary codebases. Our **Simple City** design is the antidote. We built Awesome-Audio-Visualizer to be the most accessible, high-performance canvas for your creativity.
+
+### Unleash Your Creativity with Draw-Mode Elements
+
+The project's **modular architecture** makes it incredibly easy for anyone—from seasoned developers to artists leveraging **AI assistance**—to create stunning new visualization effects or patterns.
+
+The complexity of system integration is handled by the **`detector.py`** and core modules, leaving you free to focus solely on the aesthetics.
+
+### How to Create Your Own Visualizer Mode:
+
+The logic is simple and contained:
+
+1.  **Isolated Functionality:** Every effect is isolated in its own method, following the simple naming convention: `draw_mode_X(self, fft_data)`.
+2.  **Focus on the Core:** You only need to focus on how the core **audio data input** (`fft_data`—a NumPy array of frequency amplitudes) translates into **visual output** (Pygame drawing commands on `self.screen`).
+3.  **AI Integration:** Your favorite AI can instantly generate new visual patterns because the required input/output specifications are clear and minimal. The AI doesn't need to touch the complicated audio, UI, or export logic.
+
+This design ensures that the path to **unleashing creativity is short and direct**, making this project the superior choice for visual artists who value **performance over complexity**.
 
 ---
 
@@ -42,22 +61,18 @@ The visualizer includes **five unique visual modes** that dynamically react to a
 * **Beat Explosion** – Triggers particle explosions on every detected beat, with pulsing bars.
 * **Matrix Rain** – Inspired by *The Matrix*, falling symbols change intensity and color with the sound.
 
-Built so you can easily create your own modes without much knowledge. Show your favorite AI the structure and let it modify them.  
+Built so you can easily create your own modes without much knowledge. Show your favorite AI the structure and let it modify them.
 For the pros – have fun! I’m open to cool ideas, as long as this project stays **open source** and doesn’t turn into bloated garbage.
-
----
 
 ### Color Palettes
 
 Each visualization mode supports five customizable color palettes:
 
-* `fire` 🔥  
-* `electric` ⚡  
-* `ocean` 🌊  
-* `rainbow` 🌈  
-* `neon` ✨  
-
----
+* `fire` 🔥
+* `electric` ⚡
+* `ocean` 🌊
+* `rainbow` 🌈
+* `neon` ✨
 
 ### Audio Control
 
@@ -114,10 +129,10 @@ pip install pygame numpy pyaudio librosa
 
 ### Detailed Dependencies:
 
-* `pygame` – Graphics and window management.
-* `numpy` – Fast Fourier Transform (FFT) and array operations.
-* `pyaudio` – Live audio input handling.
-* `librosa` – Advanced audio analysis functions.
+  * `pygame` – Graphics and window management.
+  * `numpy` – Fast Fourier Transform (FFT) and array operations.
+  * `pyaudio` – Live audio input handling.
+  * `librosa` – Advanced audio analysis functions.
 
 #### **Note about `pyaudio`:**
 
@@ -150,17 +165,16 @@ If issues persist, use:
 pip install sounddevice
 ```
 
----
+-----
 
 ## 🤝 Contributing
 
-This project is **open source**, and contributions are welcome!
+This project is **open source**, and contributions are welcome\!
 Bug reports, feature suggestions, and pull requests are highly appreciated.
 
----
+-----
 
 ## 📝 License
 
 Licensed under **Apache 2.0**. See [LICENSE](LICENSE) for details.
-
 
