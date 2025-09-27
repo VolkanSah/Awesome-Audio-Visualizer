@@ -380,22 +380,36 @@ class ExportManager:
         self.start_time = time.time()
         self.frame_count = 0
 
-        # Starte den FFmpeg-Prozess für die Videoaufnahme
+    # VERBESSERTER FFmpeg-Command
         cmd = [
             'ffmpeg', '-y',
             '-f', 'rawvideo',
             '-vcodec', 'rawvideo',
             '-s', f'{self.visualizer.screen_width}x{self.visualizer.screen_height}',
             '-pix_fmt', 'rgb24',
-            '-r', '60', # 60 FPS für das Video
+            '-r', '60',
             '-i', '-',
-            '-an', # Vorerst ohne Audio
             '-c:v', 'libx264',
-            '-preset', 'ultrafast',
+            '-preset', 'fast',  # 'ultrafast' → 'fast' für bessere Qualität
+            '-crf', '18',       # Qualität hinzufügen (18 = sehr gut)
+            '-pix_fmt', 'yuv420p',  # Kompatibilität für alle Player
             self.temp_video_path
         ]
-        self.video_process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        
+    
+        print(f"🐛 FFmpeg Command: {' '.join(cmd)}")
+    
+        try:
+            self.video_process = subprocess.Popen(
+                cmd, 
+                stdin=subprocess.PIPE, 
+                stdout=subprocess.PIPE,  # stdout nicht verwerfen für Debug
+                stderr=subprocess.PIPE   # stderr nicht verwerfen für Debug
+            )
+            print("✅ FFmpeg-Prozess gestartet")
+        except Exception as e:
+            print(f"❌ FFmpeg-Start fehlgeschlagen: {e}")
+            return
+    
         # Starte Audio-Thread
         self.audio_thread = threading.Thread(target=self._record_audio_task)
         self.audio_thread.daemon = True
@@ -438,22 +452,34 @@ class ExportManager:
         """Sendet einen Frame an FFmpeg."""
         if not self.is_recording or not self.video_process:
             return
-        
+    
         try:
+            # pygame Surface zu RGB-Array
             frame = pygame.surfarray.array3d(screen)
-            frame = np.transpose(frame, (1, 0, 2))
-            
-            # önntest hier auch np.rot90(np.flipud(frame)) verwenden.
-            # Transpose sollte bei 3D-Arrays schneller sein.
-            
+        
+            # WICHTIG: pygame gibt (width, height, channels), FFmpeg braucht (height, width, channels)
+            frame = frame.swapaxes(0, 1)  # Vertauscht width und height
+        
+            # Debug: Frame-Info ausgeben (nur beim ersten Frame)
+            if self.frame_count == 0:
+                print(f"🐛 Frame shape: {frame.shape}")
+                print(f"🐛 Screen size: {screen.get_size()}")
+                print(f"🐛 Expected: ({self.visualizer.screen_height}, {self.visualizer.screen_width}, 3)")
+        
+            # Frame an FFmpeg senden
             self.video_process.stdin.write(frame.tobytes())
             self.frame_count += 1
-            
+        
+            # Debug: Fortschritt alle 60 Frames (1 Sekunde bei 60 FPS)
+            if self.frame_count % 60 == 0:
+                elapsed = time.time() - self.start_time
+                print(f"🎬 {self.frame_count} Frames aufgenommen ({elapsed:.1f}s)")
+        
         except BrokenPipeError:
-            print("FFmpeg Pipe gebrochen. Beende Aufnahme.")
+            print("❌ FFmpeg Pipe gebrochen. Beende Aufnahme.")
             self.stop_recording()
         except Exception as e:
-            print(f"Fehler beim Schreiben des Frames: {e}")
+            print(f"❌ Fehler beim Schreiben des Frames: {e}")
             self.stop_recording()
             
     def stop_recording(self):
