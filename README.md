@@ -18,7 +18,7 @@ This project showcases the **true power of Pygame** for modern desktop applicati
 
 > [!WARNING]
 > **No official Apple support!** It might run on macOS, but honestly, I don't care.
-> Best experience on **Linux**. Works on **Windows** too.
+> Best experience on **Linux**. Works on **Windows** fine, too.
 
 #### 💡 Why this project?
 
