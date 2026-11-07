@@ -123,14 +123,14 @@ Two input modes supported:
 
 The project is modular for better organization and maintainability:
 
-* `main.py` – Core logic and **`HotVisualizer`** class handling rendering and user interaction.
-* `audio.py` – Audio processing and live audio stream handling via **`AudioDeviceManager`** and **`AudioProcessor`**.
-* `fileprocessor.py` – Playlist, analysis, title/artist tags and playback with the **`FileProcessor`** class.
-* `mui.py` – UI-related logic: settings, menus, screenshot functionality via **`SettingsManager`**, **`UIManager`**, **`ScreenshotManager`**.
-* `particle.py` – Defines the **`Particle`** class for the Beat Explosion mode.
-* `detector.py` – Generates **`system_report.json`** with required FFmpeg/Audio paths -needed- based on OS (must run first for export to work).
-* `exporter.py` – **`ExportManager`**: records frames, concatenates the original audio of all played songs, writes chapters and muxes everything into one MP4 via FFmpeg.
-* `decoder.py` – FFmpeg helpers (`merge_video_audio`, device list). Also usable standalone: `python decoder.py merge video.mp4 audio.mp3`.
+* [`main.py`](main.py) – Core logic and **`HotVisualizer`** class handling rendering and user interaction.
+* [`audio.py`](audio.py) – Audio processing and live audio stream handling via **`AudioDeviceManager`** and **`AudioProcessor`**.
+* [`fileprocessor.py`](fileprocessor.py) – Playlist, analysis, title/artist tags and playback with the **`FileProcessor`** class.
+* [`mui.py`](mui.py) – UI-related logic: settings, menus, screenshot functionality via **`SettingsManager`**, **`UIManager`**, **`ScreenshotManager`**.
+* [`particle.py`](particle.py) – Defines the **`Particle`** class for the Beat Explosion mode.
+* [`detector.py`](detector.py) – Generates **`system_report.json`** with required FFmpeg/Audio paths -needed- based on OS (must run first for export to work).
+* [`exporter.py`](exporter.py) – **`ExportManager`**: records frames, concatenates the original audio of all played songs, writes chapters and muxes everything into one MP4 via FFmpeg.
+* [`decoder.py`](decoder.py) – FFmpeg helpers (`merge_video_audio`, device list). Also usable standalone: `python decoder.py merge video.mp4 audio.mp3`.
 
 ---
 
