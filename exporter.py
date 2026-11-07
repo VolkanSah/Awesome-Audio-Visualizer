@@ -1,4 +1,9 @@
 # -----------------------------------------------------------------------------
+#  Awesome-Audio-Visualizer 1.1.0 by Volkan Sah
+#  Copyright (c) 2024-2025 Volkan Sah
+#  License:      AGPL-3.0-or-later (siehe LICENSE)
+#  https://github.com/VolkanSah/Awesome-Audio-Visualizer
+# -----------------------------------------------------------------------------
 # Export: records the visualizer to ONE mp4 (video + original audio + chapters)
 # File: exporter.py
 #
