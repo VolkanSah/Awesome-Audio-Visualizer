@@ -43,7 +43,10 @@ This design ensures that the path to **unleashing creativity is short and direct
 
 ---
 
-### ✨ Features
+<details><summary>🌟 Features </summary>
+ 
+
+### 
 
 ### Visual Effects
 
@@ -78,13 +81,13 @@ Two input modes supported:
   or start with `python main.py song1.mp3 song2.mp3 myfolder/`.
   The next song is analyzed in the background while the current one plays, so there is no gap.
 
-### 🎬 Chapters & Clean View
+#### 🎬 Chapters & Clean View
 
 * **Chapter look** (`M`) – every song is a chapter: when the next song starts, the visual mode and color palette switch automatically.
 * **Clean view** (`H`) – hides all data (FPS, meters, beats, help text). Only the visualization and the **song title + artist** remain.
   Title/artist are read from the file tags (install `mutagen`), otherwise from the file name (`Artist - Title.mp3`).
 
-### 🎥 Export (one MP4: video + original audio + chapters)
+#### 🎥 Export (one MP4: video + original audio + chapters)
 
 * `R` starts the export **from the beginning of the current song** and records the playlist until the end. `E` (or `R` again) stops it early.
 * The exported video always shows only the visualization + title/artist (no UI), the REC indicator is for your eyes only.
@@ -92,6 +95,9 @@ Two input modes supported:
 * Every song becomes an MP4 **chapter** (visible in VLC, mpv, ...).
 * Result: `exports/visualizer_<timestamp>.mp4` (an `ffmpeg_*.log` is kept only if something fails).
 * While exporting, skip/load/fullscreen are disabled to keep the file consistent.
+
+
+</details>
 
 ---
 
@@ -119,7 +125,7 @@ Two input modes supported:
 
 ---
 
-### 📂 Project Structure
+<details><summary> 📂 Project Structure </summary>
 
 The project is modular for better organization and maintainability:
 
@@ -131,6 +137,11 @@ The project is modular for better organization and maintainability:
 * [`detector.py`](detector.py) – Generates **`system_report.json`** with required FFmpeg/Audio paths -needed- based on OS (must run first for export to work).
 * [`exporter.py`](exporter.py) – **`ExportManager`**: records frames, concatenates the original audio of all played songs, writes chapters and muxes everything into one MP4 via FFmpeg.
 * [`decoder.py`](decoder.py) – FFmpeg helpers (`merge_video_audio`, device list). Also usable standalone: `python decoder.py merge video.mp4 audio.mp3`.
+
+
+
+</details>
+
 
 ---
 
@@ -185,7 +196,11 @@ pip install sounddevice
 
 -----
 
-### Why Pygame? Performance That Actually Works!
+
+<details><summary>Why Pygame?</summary>
+ 
+
+ #### Performance That Actually Works!
 This project showcases the **true power of Pygame** for modern desktop applications:
 - **60+ FPS** smooth visuals (while most audio visualizers crawl at 24-30 FPS)
 - **Native performance** without Electron bloat, memory leaks and startup delays
@@ -196,6 +211,11 @@ This project showcases the **true power of Pygame** for modern desktop applicati
 
 > **For real developers who value performance over convenience.**
 > While others struggle with Electron memory issues, we deliver buttery-smooth 60+ FPS experiences. Feel the difference! 💪
+
+</details>
+
+
+---
 
 
 > [!WARNING]
