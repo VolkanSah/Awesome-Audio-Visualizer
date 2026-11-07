@@ -1,5 +1,6 @@
 # 🎧 Awesome-Audio-Visualizer
 #### v. 1.0.0 (README.md by Claud.ai)
+> German verison, sorry.. soo multi lingua.. i craft first always in german 
 Welcome to Awesome-Audio-Visualizer, an open-source tool that transforms audio into stunning visual effects.
 Born from passion, this project delivers a customizable and scalable visualizer that works for personal music, videos, and live streams.
 
