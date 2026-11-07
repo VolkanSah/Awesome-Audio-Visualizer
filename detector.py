@@ -1,3 +1,12 @@
+# -----------------------------------------------------------------------------
+#  Awesome-Audio-Visualizer 1.1.0 by Volkan Sah
+#  Datei:        detector.py
+# -----------------------------------------------------------------------------
+#  Copyright (c) 2024-2025 Volkan Sah
+#  License:      AGPL-3.0-or-later (siehe LICENSE)
+#  https://github.com/VolkanSah/Awesome-Audio-Visualizer
+# -----------------------------------------------------------------------------
+
 # Universal Audio Device Detector
 # A simple tool for detection stuff, later more features but so its easier for develop and system 
 # specs so the system don't need to scan all time and so don't need to change always all stuff!
