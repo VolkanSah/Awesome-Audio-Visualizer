@@ -1,8 +1,12 @@
 # -----------------------------------------------------------------------------
-# 1. Audio Component:  class AudioDeviceManager, AudioProcessor 
-# File: audio.py
+#  Awesome-Audio-Visualizer 1.1.0 by Volkan Sah
+#  1. Audio Component:  class AudioDeviceManager, AudioProcessor 
+#  File: audio.py
 # -----------------------------------------------------------------------------
-
+#  Copyright (c) 2024-2025 Volkan Sah
+#  License:      AGPL-3.0-or-later (siehe LICENSE)
+#  https://github.com/VolkanSah/Awesome-Audio-Visualizer
+# -----------------------------------------------------------------------------
 import pyaudio
 import numpy as np
 import threading
