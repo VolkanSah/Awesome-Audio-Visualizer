@@ -202,3 +202,6 @@ Bug reports, feature suggestions, and pull requests are highly appreciated.
 
 Licensed under **Apache 2.0**. See [LICENSE](LICENSE) for details.
 
+Credits: Checked with Claude today and find a solution after 1 year! Thx. Now its alife 😄
+> sorry dont have time befor. Readme.md updated by  Claude Sonnet 5.5
+
