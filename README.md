@@ -17,7 +17,7 @@ With this project, you can give your music a visual soul. Future updates will in
 
 ---
 
-## 🎨 Creative Freedom & Simple City Design
+#### 🎨 Creative Freedom & Simple City Design
 
 Most visualization projects force artists to fight proprietary codebases. Our **Simple City** design is the antidote. We built Awesome-Audio-Visualizer to be the most accessible, high-performance canvas for your creativity.
 
@@ -43,7 +43,7 @@ This design ensures that the path to **unleashing creativity is short and direct
 
 ---
 
-## ✨ Features
+### ✨ Features
 
 ### Visual Effects
 
@@ -95,7 +95,7 @@ Two input modes supported:
 
 ---
 
-## ⌨️ Controls
+#### ⌨️ Controls
 
 | Key | Action | Description |
 | :--- | :--- | :--- |
@@ -119,7 +119,7 @@ Two input modes supported:
 
 ---
 
-## 📂 Project Structure
+### 📂 Project Structure
 
 The project is modular for better organization and maintainability:
 
@@ -134,7 +134,7 @@ The project is modular for better organization and maintainability:
 
 ---
 
-## ⚙️ Requirements
+### ⚙️ Requirements
 
 Install the required dependencies via `pip`:
 
@@ -203,14 +203,14 @@ This project showcases the **true power of Pygame** for modern desktop applicati
 > Best experience on **Linux**. Works on **Windows** fine, too.
 
 
-## 🤝 Contributing
+### 🤝 Contributing
 
 This project is **open source**, and contributions are welcome\!
 Bug reports, feature suggestions, and pull requests are highly appreciated.
 
 -----
 
-## 📝 License
+### 📝 License
 
 Licensed under **AGPL 3.0**. See [LICENSE](LICENSE) for details.
 
