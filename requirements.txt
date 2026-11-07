@@ -1,0 +1,5 @@
+pygame
+numpy
+pyaudio
+librosa
+mutagen

@@ -1,61 +1,35 @@
 # -----------------------------------------------------------------------------
-#     Awesome-Audio-Visualizer 1.0.1 by Volkan Sah
+#     Awesome-Audio-Visualizer 1.1.0 by Volkan Sah
 # -----------------------------------------------------------------------------
 # https://github.com/VolkanSah/Awesome-Audio-Visualizer/
 import pygame
 import os
 import sys
 import numpy as np
-import pyaudio
 import math
 import random
 import colorsys
 from collections import deque
-import threading
 import time
-import os
-from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog
-import librosa
-import librosa.display
 
-# new
-import subprocess
-from queue import Queue
-import wave
-
-
+# -----------------------------------------------------------------------------
 # import dependence
 # -----------------------------------------------------------------------------
-# 1. Audio Component:  class AudioDeviceManager, AudioProcessor in audio.py
-# -----------------------------------------------------------------------------
-from audio import AudioDeviceManager , AudioProcessor
-# -----------------------------------------------------------------------------
-# 2. Audio FileProcessor: class FileProcessor in fileprocessor.py
-# -----------------------------------------------------------------------------
-from fileprocessor import FileProcessor
-# -----------------------------------------------------------------------------------------------
-# 3. Management and UI Components : class SettingsManager, UIManager in mui.py
-# -----------------------------------------------------------------------------------------------
-from mui import SettingsManager , UIManager , ScreenshotManager
-# -----------------------------------------------------------------------------
-# 4. Visualizer Effects - class Particle in particle.py
-# -----------------------------------------------------------------------------
-from particle import Particle
-# -----------------------------------------------------------------------------
-# 6. Export functions - merge_video_audio , merge_video_audio in decoder.py
-# -----------------------------------------------------------------------------
-from decoder import merge_video_audio , merge_video_audio
-# -----------------------------------------------------------------------------
-# import dependence end start main app core below
-# -----------------------------------------------------------------------------
-# 
+from audio import AudioDeviceManager, AudioProcessor            # live input
+from fileprocessor import FileProcessor, collect_audio_files    # files + playlist
+from mui import SettingsManager, UIManager, ScreenshotManager   # UI helpers
+from particle import Particle                                   # beat explosion
+from exporter import ExportManager                              # mp4 export
 # -----------------------------------------------------------------------------
 # 5. Main Visualizer Class - class HotVisualizer in main.py (this file!)
 # -----------------------------------------------------------------------------
+FONT_NAMES = "segoeui,arial,malgungothic,msgothic,microsoftyahei,notosanscjk,dejavusans"
+
+
 class HotVisualizer:
-    def __init__(self, width=1200, height=800):
+    def __init__(self, width=1200, height=800, start_paths=None):
         pygame.init()
         self.screen_width = width
         self.screen_height = height
@@ -63,15 +37,14 @@ class HotVisualizer:
         pygame.display.set_caption("🔥 AWESOME AUDIO VISUALIZER 🔥")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 36)
-        
+
         # Initialize managers
         self.device_manager = AudioDeviceManager()
         self.settings = SettingsManager()
         self.ui = UIManager(self.screen, self.font)
         self.screenshot_manager = ScreenshotManager()
-        # Neu: Initialisiere den Export-Manager
-        self.export_manager = ExportManager(self)
-        
+        self.export_manager = ExportManager()
+
         # Visualizer State
         self.time = 0
         self.beat_flash = 0
@@ -80,7 +53,7 @@ class HotVisualizer:
         self.mode_names = ["Circular Bars", "Waveform Tunnel", "Frequency Spiral", "Beat Explosion", "Matrix Rain"]
         self.color_palette_index = 0
         self.palettes = ["fire", "electric", "ocean", "rainbow", "neon"]
-        
+
         # Effects state
         self.fps_history = deque(maxlen=60)
         self.tunnel_points = []
@@ -91,12 +64,65 @@ class HotVisualizer:
         self.audio_mode = "live"
         self.audio_processor = AudioProcessor(self.device_manager.get_default_device())
         self.file_processor = FileProcessor()
-        self.loading_thread = None
 
-    def _load_file_task(self, file_path):
-        """Diese Funktion wird im Hintergrund-Thread ausgeführt, um eine Datei zu analysieren."""
-        self.file_processor.load_and_analyze(file_path)
-        self.loading_thread = None # Signalisiert, dass das Laden beendet ist
+        # Playlist / chapters / clean view
+        self.clean_mode = False        # H: only visuals + song title/artist
+        self.auto_chapter = True       # M: every song gets its own look
+        self._seen_index = -1
+        self._seen_serial = 0
+        self.cur_level = 0
+        self.cur_peak = 0
+        self._font_cache = {}
+        self._title_key = None
+        self._title_surfs = None
+        self.notice = ""
+        self.notice_until = 0
+        self._last_export_status = ""
+
+        if start_paths:
+            self.load_paths(start_paths, append=False)
+
+    # ------------------------------------------------------------------ helpers
+    def notify(self, text, seconds=5):
+        self.notice = text
+        self.notice_until = time.time() + seconds
+        print(text)
+
+    def get_font(self, size, bold=False):
+        key = (size, bold)
+        if key not in self._font_cache:
+            self._font_cache[key] = pygame.font.SysFont(FONT_NAMES, size, bold=bold)
+        return self._font_cache[key]
+
+    def load_paths(self, paths, append):
+        files = collect_audio_files(paths)
+        if not files:
+            self.notify("Keine Audiodateien gefunden (mp3, wav, ogg, flac).")
+            return
+        fp = self.file_processor
+        if self.audio_mode == "live":
+            self.audio_processor.stop()
+            self.audio_mode = "file"
+        if append and fp.playlist:
+            fp.add_to_playlist(files)
+            self.notify(f"{len(files)} Titel zur Playlist hinzugefügt ({len(fp.playlist)} gesamt)")
+        else:
+            if fp.set_playlist(files, autoplay=True):
+                self._seen_index = -1
+                self.notify(f"Playlist: {len(files)} Titel")
+            else:
+                self.notify("Bitte warten, es wird noch geladen ...")
+
+    def ask_files(self):
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        try:
+            return root.tk.splitlist(filedialog.askopenfilenames(
+                parent=root, title="Audio auswählen (mehrere möglich)",
+                filetypes=[("Audio Files", "*.mp3 *.wav *.ogg *.flac")]))
+        finally:
+            root.destroy()
 
     def init_matrix(self):
         for x in range(0, self.screen_width, 20):
@@ -215,335 +241,279 @@ class HotVisualizer:
         for particle in self.particles:
             particle.draw(self.screen)
 
+    # ------------------------------------------------------------------ overlays
+    def draw_title_overlay(self):
+        """Song title + artist. Drawn BEFORE the export frame is grabbed, so it
+        is part of the exported video. Nothing else is."""
+        fp = self.file_processor
+        if self.audio_mode != "file" or not fp.is_analyzed or not (fp.title or fp.artist):
+            return
+        size = max(24, self.screen_height // 22)
+        key = (fp.title, fp.artist, size)
+        if key != self._title_key:
+            big, small = self.get_font(size, True), self.get_font(int(size * 0.7))
+            def make(font, text, color):
+                return (font.render(text, True, color), font.render(text, True, (0, 0, 0))) if text else None
+            self._title_surfs = (make(big, fp.title, (255, 255, 255)),
+                                 make(small, fp.artist, (200, 200, 210)))
+            self._title_key = key
+        pos = fp.get_position()
+        alpha = int(255 * min(1.0, (pos if pos is not None else 1.0) / 1.0))  # 1s fade-in
+        y = self.screen_height - int(self.screen_height * 0.12) - size * 2
+        for surfs in self._title_surfs:
+            if not surfs:
+                continue
+            main_s, shadow_s = surfs
+            x = (self.screen_width - main_s.get_width()) // 2
+            shadow_s.set_alpha(alpha // 2)
+            main_s.set_alpha(alpha)
+            self.screen.blit(shadow_s, (x + 2, y + 2))
+            self.screen.blit(main_s, (x, y))
+            y += main_s.get_height() + 4
+
+    def draw_status_overlays(self):
+        """REC indicator and notices. Drawn AFTER the export frame -> not in the video."""
+        ex = self.export_manager
+        if ex.status != self._last_export_status:
+            self._last_export_status = ex.status
+            if ex.status:
+                self.notify(ex.status, 8)
+        y = 10
+        if ex.is_recording:
+            secs = ex.frames / ex.fps
+            if (self.time // 30) % 2 == 0:
+                pygame.draw.circle(self.screen, (255, 40, 40), (self.screen_width // 2 - 60, y + 12), 9)
+            txt = self.font.render(f"REC {int(secs // 60):02d}:{int(secs % 60):02d}", True, (255, 80, 80))
+            self.screen.blit(txt, (self.screen_width // 2 - 45, y))
+            y += 38
+        elif ex.is_finalizing:
+            txt = self.font.render("Export wird fertiggestellt ...", True, (255, 200, 80))
+            self.screen.blit(txt, (self.screen_width // 2 - txt.get_width() // 2, y))
+            y += 38
+        if self.notice and time.time() < self.notice_until:
+            txt = self.get_font(24).render(self.notice, True, (255, 255, 255))
+            bg = pygame.Surface((txt.get_width() + 20, txt.get_height() + 10)); bg.set_alpha(160)
+            self.screen.blit(bg, (self.screen_width // 2 - bg.get_width() // 2, y))
+            self.screen.blit(txt, (self.screen_width // 2 - txt.get_width() // 2, y + 5))
+
     def draw_ui(self, audio_processor):
         current_fps = self.clock.get_fps()
         self.fps_history.append(current_fps)
         avg_fps = np.mean(self.fps_history) if self.fps_history else 0
-        
+
         mode_text = f"Mode: {self.mode_names[self.mode]} | Palette: {self.palettes[self.color_palette_index]}"
         text = self.font.render(mode_text, True, (255, 255, 255))
         self.screen.blit(text, (10, 10))
-        
+
         if self.settings.show_audio_info and audio_processor:
             beats, bpm = audio_processor.get_beat_stats()
             if self.audio_mode == "live":
                 level, peak, sensitivity = audio_processor.current_level, audio_processor.peak_level, audio_processor.beat_sensitivity
-            else: # File Mode
-                _, _, level, peak = audio_processor.get_all_audio_data()
-                sensitivity = 0.0
+            else:  # File Mode (values come from the main loop, no second read)
+                level, peak, sensitivity = self.cur_level, self.cur_peak, 0.0
             self.ui.draw_audio_level_meter(level, peak, 10, 50)
             self.ui.draw_beat_info(beats, bpm, sensitivity, 10, 90)
-        
+
         if self.settings.show_fps:
             fps_text = f"FPS: {avg_fps:.1f}"
             fps_surface = self.font.render(fps_text, True, (255, 255, 0))
             self.screen.blit(fps_surface, (self.screen_width - 120, 10))
-        
-        if self.loading_thread and self.loading_thread.is_alive():
+
+        fp = self.file_processor
+        if fp.loading:
             loading_surf = self.font.render("Analysiere Audio...", True, (255, 255, 0))
             loading_rect = loading_surf.get_rect(center=(self.screen_width / 2, self.screen_height / 2))
             self.screen.blit(loading_surf, loading_rect)
-            
+
         if not self.ui.show_settings and not self.ui.show_device_menu:
-            controls1 = "TAB: Settings | SPACE: Mode | C: Colors | S: Screenshot | F: Fullscreen | ESC: Exit"
+            controls1 = "TAB: Settings | SPACE: Mode | C: Colors | S: Screenshot | F: Fullscreen | H: Clean view | ESC: Exit"
             text1 = pygame.font.Font(None, 20).render(controls1, True, (200, 200, 200))
             self.screen.blit(text1, (10, self.screen_height - 45))
 
             if self.audio_mode == 'live':
-                controls2 = "MODE: Live | A: Load File | D: Devices | Q/W: Beat Sens."
+                controls2 = "MODE: Live | A: Load files | D: Devices | Q/W: Beat Sens."
             else:
-                state = self.file_processor.playback_state.capitalize() if self.file_processor.is_analyzed else "Loading..."
-                controls2 = f"MODE: File ({state}) | L: To Live | P: Play/Pause | K: Stop"
-            
+                state = fp.playback_state.capitalize() if fp.is_analyzed else "Loading..."
+                i, n = fp.playlist_info()
+                chap = "on" if self.auto_chapter else "off"
+                controls2 = (f"FILE {i}/{n} ({state}) | L: Live | A/Shift+A: Load/Add | P: Play/Pause | K: Stop | "
+                             f"N/B: Next/Prev | M: Chapter look ({chap}) | R: Export")
             text2 = pygame.font.Font(None, 20).render(controls2, True, (200, 200, 200))
             self.screen.blit(text2, (10, self.screen_height - 25))
-# ----------------------------------------  end class Particles stored in particles.py ----------------
 
+    # ------------------------------------------------------------------ export
+    def start_export(self):
+        fp = self.file_processor
+        ex = self.export_manager
+        if self.audio_mode != "file" or not fp.is_analyzed or fp.loading:
+            self.notify("Export nur im File-Modus mit geladenem Track (A drücken).")
+            return
+        if self.ui.show_settings or self.ui.show_device_menu:
+            self.ui.show_settings = self.ui.show_device_menu = False
+        w, h = self.screen.get_size()
+        if not ex.start(w, h):
+            self.notify(ex.status)
+            return
+        fp.restart_track()   # export always starts at 0:00 of the current song
+        self.notify("Export läuft: ab jetzt wird die Playlist bis zum Ende aufgenommen (E/R = stoppen)")
+
+    def stop_export(self, natural_end=False):
+        if self.export_manager.is_recording:
+            self.export_manager.stop(natural_end)
+
+    def grab_export_frame(self):
+        ex, fp = self.export_manager, self.file_processor
+        if not ex.is_recording:
+            return
+        if self.screen.get_size() != ex.size:
+            self.notify("Fenstergröße geändert - Export gestoppt")
+            self.stop_export()
+            return
+        n = ex.frames_due(fp.get_position())
+        if n > 0:
+            grab = getattr(pygame.image, 'tobytes', None) or pygame.image.tostring
+            ex.write(grab(self.screen, 'RGB'), n)
+
+    # ------------------------------------------------------------------ main loop
     def run(self):
         running = True
         fullscreen = False
-        
+        fp = self.file_processor
+        ex = self.export_manager
+
         print("🔥 AWESOME AUDIO VISUALIZER STARTED! 🔥")
-        
+
         while running:
+            menu_open = self.ui.show_settings or self.ui.show_device_menu
+            recording = ex.is_recording
             for event in pygame.event.get():
-                if event.type == pygame.QUIT: running = False
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.DROPFILE:
+                    if not recording:
+                        self.load_paths([event.file], append=bool(fp.playlist) and self.audio_mode == "file")
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        if self.ui.show_settings or self.ui.show_device_menu: self.ui.show_settings = self.ui.show_device_menu = False
+                    key = event.key
+                    shift = bool(pygame.key.get_mods() & pygame.KMOD_SHIFT)
+                    if key == pygame.K_ESCAPE:
+                        if menu_open: self.ui.show_settings = self.ui.show_device_menu = False
                         else: running = False
-                    elif event.key == pygame.K_TAB: self.ui.show_settings = not self.ui.show_settings; self.ui.show_device_menu = False
-                    elif event.key == pygame.K_d: self.ui.show_device_menu = not self.ui.show_device_menu; self.ui.show_settings = False
-                    elif event.key == pygame.K_r: self.export_manager.start_recording()
-                    elif event.key == pygame.K_e: self.export_manager.stop_recording("my_awesome_visualizer_video.mp4")
-                    elif event.key == pygame.K_SPACE and not self.ui.show_settings and not self.ui.show_device_menu: self.mode = (self.mode + 1) % len(self.mode_names)
-                    elif event.key == pygame.K_c and not self.ui.show_settings and not self.ui.show_device_menu: self.color_palette_index = (self.color_palette_index + 1) % len(self.palettes)
-                    elif event.key == pygame.K_f:
-                        fullscreen = not fullscreen
-                        self.screen = pygame.display.set_mode((0,0) if fullscreen else (1200, 800), pygame.FULLSCREEN if fullscreen else 0)
-                        self.screen_width, self.screen_height = self.screen.get_size()
-                    elif event.key == pygame.K_s: self.screenshot_manager.capture_and_save(self.screen)
-                    elif event.key in (pygame.K_q, pygame.K_w) and self.audio_mode == "live":
-                        change = -0.1 if event.key == pygame.K_q else 0.1
+                    elif key == pygame.K_TAB: self.ui.show_settings = not self.ui.show_settings; self.ui.show_device_menu = False
+                    elif key == pygame.K_d: self.ui.show_device_menu = not self.ui.show_device_menu; self.ui.show_settings = False
+                    elif key == pygame.K_r:
+                        if recording: self.stop_export()
+                        else: self.start_export()
+                    elif key == pygame.K_e: self.stop_export()
+                    elif key == pygame.K_SPACE and not menu_open: self.mode = (self.mode + 1) % len(self.mode_names)
+                    elif key == pygame.K_c and not menu_open: self.color_palette_index = (self.color_palette_index + 1) % len(self.palettes)
+                    elif key == pygame.K_h: self.clean_mode = not self.clean_mode
+                    elif key == pygame.K_m:
+                        self.auto_chapter = not self.auto_chapter
+                        self.notify("Kapitel-Look: " + ("an (jeder Song bekommt einen neuen Look)" if self.auto_chapter else "aus"))
+                    elif key == pygame.K_f:
+                        if recording: self.notify("Vollbild-Wechsel während des Exports nicht möglich.")
+                        else:
+                            fullscreen = not fullscreen
+                            self.screen = pygame.display.set_mode((0, 0) if fullscreen else (1200, 800), pygame.FULLSCREEN if fullscreen else 0)
+                            self.screen_width, self.screen_height = self.screen.get_size()
+                            self.ui.screen = self.screen
+                    elif key == pygame.K_s: self.screenshot_manager.capture_and_save(self.screen)
+                    elif key in (pygame.K_q, pygame.K_w) and self.audio_mode == "live":
+                        change = -0.1 if key == pygame.K_q else 0.1
                         self.audio_processor.beat_sensitivity = np.clip(self.audio_processor.beat_sensitivity + change, 0.5, 3.0)
-                    elif event.key == pygame.K_i: self.settings.show_fps = not self.settings.show_fps
-                    elif event.key == pygame.K_o: self.settings.show_audio_info = not self.settings.show_audio_info
-                    elif event.key == pygame.K_l:
-                         if self.audio_mode != "live":
-                            if self.file_processor: self.file_processor.stop()
+                    elif key == pygame.K_i: self.settings.show_fps = not self.settings.show_fps
+                    elif key == pygame.K_o: self.settings.show_audio_info = not self.settings.show_audio_info
+                    elif key == pygame.K_l:
+                        if recording: self.notify("Während des Exports nicht möglich (E = Export stoppen).")
+                        elif self.audio_mode != "live":
+                            fp.stop()
                             self.audio_mode = "live"
                             self.audio_processor.start_stream()
                             print("Switched to Live Mode.")
-                    elif event.key == pygame.K_a:
-                        if not (self.loading_thread and self.loading_thread.is_alive()):
-                            if self.audio_mode == "live": self.audio_processor.stop()
-                            root = tk.Tk(); root.withdraw()
-                            file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3 *.wav *.ogg")])
-                            if file_path:
-                                self.audio_mode = "file"
-                                self.loading_thread = threading.Thread(target=self._load_file_task, args=(file_path,))
-                                self.loading_thread.start()
-                            else:
-                                if self.audio_mode != "live": self.audio_mode = "live"; self.audio_processor.start_stream()
-                    elif event.key == pygame.K_p and self.audio_mode == "file" and self.file_processor.is_analyzed: self.file_processor.toggle_play_pause()
-                    elif event.key == pygame.K_k and self.audio_mode == "file" and self.file_processor.is_analyzed: self.file_processor.stop()
+                    elif key == pygame.K_a:
+                        if recording: self.notify("Während des Exports nicht möglich (E = Export stoppen).")
+                        elif not fp.loading:
+                            files = self.ask_files()
+                            if files:
+                                self.load_paths(files, append=shift and self.audio_mode == "file")
+                    elif key == pygame.K_p and self.audio_mode == "file": fp.toggle_play_pause()
+                    elif key == pygame.K_k and self.audio_mode == "file":
+                        fp.stop()
+                        self.stop_export()
+                    elif key == pygame.K_n and self.audio_mode == "file":
+                        if recording: self.notify("Überspringen während des Exports nicht möglich.")
+                        elif not fp.next_track(): self.notify("Das war der letzte Titel.")
+                    elif key == pygame.K_b and self.audio_mode == "file":
+                        if recording: self.notify("Zurückspringen während des Exports nicht möglich.")
+                        else: fp.prev_track()
                     elif self.ui.show_device_menu:
-                        if event.key == pygame.K_UP: self.ui.selected_menu_item = max(0, self.ui.selected_menu_item - 1)
-                        elif event.key == pygame.K_DOWN: self.ui.selected_menu_item = min(len(self.device_manager.devices) - 1, self.ui.selected_menu_item + 1)
-                        elif event.key == pygame.K_RETURN:
+                        if key == pygame.K_UP: self.ui.selected_menu_item = max(0, self.ui.selected_menu_item - 1)
+                        elif key == pygame.K_DOWN: self.ui.selected_menu_item = min(len(self.device_manager.devices) - 1, self.ui.selected_menu_item + 1)
+                        elif key == pygame.K_RETURN:
                             if self.ui.selected_menu_item < len(self.device_manager.devices):
                                 new_idx = self.device_manager.devices[self.ui.selected_menu_item]['index']
                                 self.audio_processor.change_device(new_idx); self.ui.show_device_menu = False
-            
+
+            # ---- audio source
             if self.audio_mode == "live":
                 fft_data, beat_detected, _, _ = self.audio_processor.get_all_audio_data()
                 active_processor = self.audio_processor
             else:
-                if self.file_processor and self.file_processor.is_analyzed: fft_data, beat_detected, _, _ = self.file_processor.get_all_audio_data()
-                else: fft_data, beat_detected = np.zeros(1024), False
-                active_processor = self.file_processor
-            
+                fp.update()
+                err = fp.pop_error()
+                if err: self.notify(err, 8)
+                fft_data, beat_detected, self.cur_level, self.cur_peak = fp.get_all_audio_data()
+                active_processor = fp
+
+                # chapter handling: a track (re)started at 0:00
+                if fp.index != self._seen_index:
+                    if self._seen_index != -1 and self.auto_chapter and fp.index >= 0:
+                        self.mode = (self.mode + 1) % len(self.mode_names)
+                        self.color_palette_index = (self.color_palette_index + 1) % len(self.palettes)
+                    self._seen_index = fp.index
+                if fp.track_serial != self._seen_serial:
+                    self._seen_serial = fp.track_serial
+                    if ex.is_recording and fp.is_analyzed:
+                        label = f"{fp.artist} - {fp.title}" if fp.artist else fp.title
+                        ex.begin_track(fp.file_path, fp.duration, label)
+                if ex.is_recording and fp.ended_all:
+                    self.stop_export(natural_end=True)
+
+            # ---- draw: visuals + title (these two end up in the export)
             self.screen.fill((10, 10, 20))
-            
-            draw_modes = [self.draw_mode_0_circular_bars, self.draw_mode_1_waveform_tunnel, self.draw_mode_2_frequency_spiral, lambda d: self.draw_mode_3_beat_explosion(d, beat_detected), self.draw_mode_4_matrix_rain]
+            draw_modes = [self.draw_mode_0_circular_bars, self.draw_mode_1_waveform_tunnel, self.draw_mode_2_frequency_spiral,
+                          lambda d: self.draw_mode_3_beat_explosion(d, beat_detected), self.draw_mode_4_matrix_rain]
             draw_modes[self.mode](fft_data)
             self.update_particles()
-            
+            self.draw_title_overlay()
+
+            self.grab_export_frame()   # <- video frame = visuals + title only
+
+            # ---- draw: everything below is for YOUR eyes only
+            if not self.clean_mode:
+                self.draw_ui(active_processor)
             current_device_idx = self.audio_processor.device_index if self.audio_processor else -1
-             
-            self.draw_ui(active_processor)
-            
             self.ui.draw_device_menu(self.device_manager.devices, current_device_idx, 50, 50)
             self.ui.draw_settings_overlay(self.settings, self.audio_processor)
+            self.draw_status_overlays()
 
-            # HIER ist der richtige Platz, um den Frame für die Aufnahme zu senden
-            self.export_manager.capture_frame(self.screen)
-            
             pygame.display.flip()
             self.clock.tick(60)
             self.time += 1
-            
 
+        # ---- shutdown: finish a running export first, so no file is lost
+        if ex.is_recording:
+            ex.stop()
+        ex.wait()
         self.audio_processor.stop()
-        if self.file_processor: self.file_processor.stop()
+        fp.stop()
         self.device_manager.close()
         pygame.quit()
         sys.exit()
 
-# -----------------------------------------------------------------------------
-# 6. Export Manager
-# -----------------------------------------------------------------------------
-
-class ExportManager:
-    def __init__(self, visualizer):
-        self.visualizer = visualizer
-        self.is_recording = False
-        self.video_thread = None
-        self.audio_thread = None
-        self.video_process = None
-        self.audio_file = None
-        self.temp_video_path = "temp_video.mp4"
-        self.temp_audio_path = "temp_audio.wav"
-        self.start_time = None
-        self.frame_count = 0
-
-    def start_recording(self, output_filename="export.mp4"):
-        if self.is_recording:
-            print("Export läuft bereits.")
-            return
-        
-        if self.visualizer.audio_mode != "file":
-            print("Export nur im File-Modus möglich!")
-            return
-        
-        if not self.visualizer.file_processor.file_path:
-            print("Kein Audio-File geladen!")
-            return
-        
-        print("Starte Export...")
-        self.is_recording = True
-        self.output_filename = output_filename
-        self.start_time = time.time()
-        self.frame_count = 0
-
-        # VERBESSERTER FFmpeg-Command
-        cmd = [
-            'ffmpeg', '-y',
-            '-f', 'rawvideo',
-            '-vcodec', 'rawvideo',
-            '-s', f'{self.visualizer.screen_width}x{self.visualizer.screen_height}',
-            '-pix_fmt', 'rgb24',
-            '-r', '60',
-            '-i', '-',
-            '-c:v', 'libx264',
-            '-preset', 'fast',  # 'ultrafast' → 'fast' für bessere Qualität
-            '-crf', '18',       # Qualität hinzufügen (18 = sehr gut)
-            '-pix_fmt', 'yuv420p',  # Kompatibilität für alle Player
-            self.temp_video_path
-        ]
-        
-        print(f"🐛 FFmpeg Command: {' '.join(cmd)}")
-        
-        try:
-            self.video_process = subprocess.Popen(
-                cmd, 
-                stdin=subprocess.PIPE, 
-                stdout=subprocess.PIPE,  # stdout nicht verwerfen für Debug
-                stderr=subprocess.PIPE   # stderr nicht verwerfen für Debug
-            )
-            print("✅ FFmpeg-Prozess gestartet")
-        except Exception as e:
-            print(f"❌ FFmpeg-Start fehlgeschlagen: {e}")
-            return
-        
-        # Starte Audio-Thread
-        self.audio_thread = threading.Thread(target=self._record_audio_task)
-        self.audio_thread.daemon = True
-        self.audio_thread.start()
-        
-    def _record_audio_task(self):
-        """Audio vom geladenen File nehmen, nicht aufnehmen"""
-        try:
-            if (self.visualizer.audio_mode == "file" and 
-                self.visualizer.file_processor.file_path and 
-                os.path.exists(self.visualizer.file_processor.file_path)):
-                
-                # Original-Audio-File direkt kopieren
-                import shutil
-                shutil.copy2(self.visualizer.file_processor.file_path, self.temp_audio_path)
-                print("Original-Audio für Export kopiert")
-            else:
-                print("Kein Audio-File verfügbar - erstelle stille Audio-Spur")
-                # Fallback: stille Audio-Datei erstellen
-                self._create_silent_audio()
-                
-        except Exception as e:
-            print(f"Audio-Export Fehler: {e}")
-            self._create_silent_audio()
-
-    def _create_silent_audio(self):
-        """Erstellt eine stille WAV-Datei als Fallback"""
-        import wave
-        with wave.open(self.temp_audio_path, 'wb') as wav_file:
-            wav_file.setnchannels(2)  # Stereo
-            wav_file.setsampwidth(2)  # 16-bit
-            wav_file.setframerate(44100)
-            # 10 Sekunden stille Audio
-            wav_file.writeframes(b'\x00' * (44100 * 2 * 2 * 10))
-
-    def capture_frame(self, screen):
-        """Sendet einen Frame an FFmpeg."""
-        if not self.is_recording or not self.video_process:
-            return
-
-        # Auto-Stop wenn Audio fertig ist
-        if (self.visualizer.audio_mode == "file" and 
-            self.visualizer.file_processor.playback_state == "playing" and
-            not pygame.mixer.music.get_busy()):
-            
-            print("Audio beendet - stoppe Recording automatisch")
-            self.stop_recording()
-            return
-        
-        try:
-            # pygame Surface zu RGB-Array
-            frame = pygame.surfarray.array3d(screen)
-            
-            # WICHTIG: pygame gibt (width, height, channels), FFmpeg braucht (height, width, channels)
-            frame = frame.swapaxes(0, 1)  # Vertauscht width und height
-            
-            # Debug: Frame-Info ausgeben (nur beim ersten Frame)
-            if self.frame_count == 0:
-                print(f"🐛 Frame shape: {frame.shape}")
-                print(f"🐛 Screen size: {screen.get_size()}")
-                print(f"🐛 Expected: ({self.visualizer.screen_height}, {self.visualizer.screen_width}, 3)")
-            
-            # Frame an FFmpeg senden
-            self.video_process.stdin.write(frame.tobytes())
-            self.frame_count += 1
-            
-            # Debug: Fortschritt alle 60 Frames (1 Sekunde bei 60 FPS)
-            if self.frame_count % 60 == 0:
-                elapsed = time.time() - self.start_time
-                print(f"🎬 {self.frame_count} Frames aufgenommen ({elapsed:.1f}s)")
-            
-        except BrokenPipeError:
-            print("❌ FFmpeg Pipe gebrochen. Beende Aufnahme.")
-            self.stop_recording()
-        except Exception as e:
-            print(f"❌ Fehler beim Schreiben des Frames: {e}")
-            self.stop_recording()
-            
-    def stop_recording(self):
-        if not self.is_recording:
-            return
-
-        print("Beende Video- und Audio-Aufnahme...")
-        self.is_recording = False
-        
-        # Schließe Video-Pipe
-        if self.video_process:
-            self.video_process.stdin.close()
-            self.video_process.wait()
-
-        # Warte, bis der Audio-Thread fertig ist
-        if self.audio_thread:
-            self.audio_thread.join()
-
-        # Starte den Merger-Prozess in einem neuen Thread, um die UI nicht zu blockieren
-        merge_thread = threading.Thread(target=self._merge_files_task)
-        merge_thread.start()
-
-    def _merge_files_task(self):
-        """Task to merge video and audio in a separate thread."""
-        print("Starte den Merging-Prozess...")
-        
-        # Aufruf des externen decoder.py Skripts
-        cmd = [
-            sys.executable,  # Stellt sicher, dass das richtige Python-Executable verwendet wird
-            'decoder.py',
-            'merge',  # Das fehlte! decoder.py braucht den 'merge' subcommand
-            self.temp_video_path,
-            self.temp_audio_path,
-            '--output', self.output_filename
-        ]
-        
-        try:
-            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-            print("Merging-Prozess abgeschlossen.")
-            print(f"✅ Finale Datei: {self.output_filename}")
-        except subprocess.CalledProcessError as e:
-            print(f"❌ Fehler beim Mergen: {e}")
-            print(f"Stderr: {e.stderr}")
-        
-        # Aufräumen
-        if os.path.exists(self.temp_video_path):
-            os.remove(self.temp_video_path)
-            print("Temp video gelöscht")
-        if os.path.exists(self.temp_audio_path):
-            os.remove(self.temp_audio_path)
-            print("Temp audio gelöscht")
 
 if __name__ == "__main__":
-    visualizer = HotVisualizer()
+    # python main.py                      -> start in live mode
+    # python main.py song1.mp3 folder/    -> start directly with a playlist
+    visualizer = HotVisualizer(start_paths=sys.argv[1:] or None)
     visualizer.run()

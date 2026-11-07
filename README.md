@@ -20,14 +20,14 @@ This project showcases the **true power of Pygame** for modern desktop applicati
 > **No official Apple support!** It might run on macOS, but honestly, I don't care.
 > Best experience on **Linux**. Works on **Windows** fine, too.
 
-####  Why this project?
+#### 💡 Why this project?
 
 Most existing visualizers are either closed-source or offer limited customization. My goal was to build a tool that is easy to use yet powerful enough to unleash your creativity.
 With this project, you can give your music a visual soul. Future updates will include features like video export and more unique effects – a **K-Pop artifact** is promised! 😉
 
 ---
 
-##  Creative Freedom & Simple City Design
+## 🎨 Creative Freedom & Simple City Design
 
 Most visualization projects force artists to fight proprietary codebases. Our **Simple City** design is the antidote. We built Awesome-Audio-Visualizer to be the most accessible, high-performance canvas for your creativity.
 
@@ -49,7 +49,7 @@ This design ensures that the path to **unleashing creativity is short and direct
 
 ---
 
-## ⭐ Features ⭐
+## ✨ Features
 
 ### Visual Effects
 
@@ -84,13 +84,13 @@ Two input modes supported:
   or start with `python main.py song1.mp3 song2.mp3 myfolder/`.
   The next song is analyzed in the background while the current one plays, so there is no gap.
 
-###  Chapters & Clean View
+### 🎬 Chapters & Clean View
 
 * **Chapter look** (`M`) – every song is a chapter: when the next song starts, the visual mode and color palette switch automatically.
 * **Clean view** (`H`) – hides all data (FPS, meters, beats, help text). Only the visualization and the **song title + artist** remain.
   Title/artist are read from the file tags (install `mutagen`), otherwise from the file name (`Artist - Title.mp3`).
 
-###  Export (one MP4: video + original audio + chapters)
+### 🎥 Export (one MP4: video + original audio + chapters)
 
 * `R` starts the export **from the beginning of the current song** and records the playlist until the end. `E` (or `R` again) stops it early.
 * The exported video always shows only the visualization + title/artist (no UI), the REC indicator is for your eyes only.
@@ -101,7 +101,7 @@ Two input modes supported:
 
 ---
 
-## Controls
+## ⌨️ Controls
 
 | Key | Action | Description |
 | :--- | :--- | :--- |
@@ -125,7 +125,7 @@ Two input modes supported:
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 The project is modular for better organization and maintainability:
 

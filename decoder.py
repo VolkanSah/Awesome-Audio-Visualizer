@@ -12,7 +12,9 @@ from datetime import datetime
 # Load system configuration from system_report.json
 def load_system_config():
     """Load complete system configuration including FFmpeg and audio devices"""
-    config_file = 'system_report.json'
+    config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'system_report.json')
+    if not os.path.exists(config_file):
+        config_file = 'system_report.json'  # fallback: current working directory
     if not os.path.exists(config_file):
         raise FileNotFoundError("system_report.json not found. Please run detector first.")
     
