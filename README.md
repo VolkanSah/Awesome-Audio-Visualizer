@@ -1,5 +1,5 @@
 # 🎧 Awesome-Audio-Visualizer
-#### v. 1.0.0 (README.md updated by Claud.ai)
+#### v. 1.0.0 
 ###### AI compatible - teste, works!
 > German verison, sorry.. soon multi lingua.. i craft always in german first.
 > 
@@ -215,5 +215,5 @@ Bug reports, feature suggestions, and pull requests are highly appreciated.
 Licensed under **AGPL 3.0**. See [LICENSE](LICENSE) for details.
 
 Credits: Checked with Claude today and find a solution after 1 year! Thx. Now its alife 😄
-> sorry dont have time befor. Readme.md updated by  Claude Sonnet 5.5
+> sorry dont have time befor. Readme.md updated by Claude Sonnet 5.5
 
