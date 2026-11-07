@@ -1,7 +1,12 @@
 # -----------------------------------------------------------------------------
+#  Awesome-Audio-Visualizer 1.1.0 by Volkan Sah
 # 6. Export functions - merge_video_audio (Automated)
 # File: decoder.py
 # Updated for new system_report.json format with audio device endpoints
+# -----------------------------------------------------------------------------
+#  Copyright (c) 2024-2025 Volkan Sah
+#  License:      AGPL-3.0-or-later (siehe LICENSE)
+#  https://github.com/VolkanSah/Awesome-Audio-Visualizer
 # -----------------------------------------------------------------------------
 import argparse
 import subprocess
