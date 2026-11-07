@@ -1,0 +1,98 @@
+{
+    "system_info": {
+        "platform": "Windows",
+        "platform_version": "10.0.26100",
+        "architecture": "64bit",
+        "python_version": "3.12.3",
+        "timestamp": "2025-08-25T11:43:40.889665"
+    },
+    "workdir_check": {
+        "writable": true,
+        "path": "C:\\Users\\AAV\\Desktop\\tet\\Awesome-Audio-Visualizer-main",
+        "error": null
+    },
+    "ffmpeg": {
+        "path": "C:\\ffmpeg\\bin\\ffmpeg.exe",
+        "status": "found"
+    },
+    "audio_devices": {
+        "microphones": [
+            {
+                "name": "AMD High Definition Audio Device",
+                "description": "AMD High Definition Audio Device",
+                "type": "microphone",
+                "detection_method": "powershell_wmi",
+                "endpoints": {
+                    "endpoint_id": "microphone_0",
+                    "api_path": "/audio/devices/microphone/0",
+                    "rest_endpoint": "GET /api/v1/audio/microphone/amd_high_definition_audio_device",
+                    "direct_access": "amd_high_definition_audio_device"
+                }
+            },
+            {
+                "name": "AMD Streaming Audio Device",
+                "description": "AMD Streaming Audio Device",
+                "type": "microphone",
+                "detection_method": "powershell_wmi",
+                "endpoints": {
+                    "endpoint_id": "microphone_1",
+                    "api_path": "/audio/devices/microphone/1",
+                    "rest_endpoint": "GET /api/v1/audio/microphone/amd_streaming_audio_device",
+                    "direct_access": "amd_streaming_audio_device"
+                }
+            },
+            {
+                "name": "Realtek High Definition Audio",
+                "description": "Realtek High Definition Audio",
+                "type": "microphone",
+                "detection_method": "powershell_wmi",
+                "endpoints": {
+                    "endpoint_id": "microphone_2",
+                    "api_path": "/audio/devices/microphone/2",
+                    "rest_endpoint": "GET /api/v1/audio/microphone/realtek_high_definition_audio",
+                    "direct_access": "realtek_high_definition_audio"
+                }
+            }
+        ],
+        "all_audio_inputs": [
+            {
+                "name": "AMD High Definition Audio Device",
+                "description": "AMD High Definition Audio Device",
+                "type": "microphone",
+                "detection_method": "powershell_wmi",
+                "endpoints": {
+                    "endpoint_id": "microphone_0",
+                    "api_path": "/audio/devices/microphone/0",
+                    "rest_endpoint": "GET /api/v1/audio/microphone/amd_high_definition_audio_device",
+                    "direct_access": "amd_high_definition_audio_device"
+                }
+            },
+            {
+                "name": "AMD Streaming Audio Device",
+                "description": "AMD Streaming Audio Device",
+                "type": "microphone",
+                "detection_method": "powershell_wmi",
+                "endpoints": {
+                    "endpoint_id": "microphone_1",
+                    "api_path": "/audio/devices/microphone/1",
+                    "rest_endpoint": "GET /api/v1/audio/microphone/amd_streaming_audio_device",
+                    "direct_access": "amd_streaming_audio_device"
+                }
+            },
+            {
+                "name": "Realtek High Definition Audio",
+                "description": "Realtek High Definition Audio",
+                "type": "microphone",
+                "detection_method": "powershell_wmi",
+                "endpoints": {
+                    "endpoint_id": "microphone_2",
+                    "api_path": "/audio/devices/microphone/2",
+                    "rest_endpoint": "GET /api/v1/audio/microphone/realtek_high_definition_audio",
+                    "direct_access": "realtek_high_definition_audio"
+                }
+            }
+        ],
+        "detection_method": "powershell_wmi",
+        "error": null
+    }
+}

@@ -1,3 +1,7 @@
+# -----------------------------------------------------------------------------
+#     Awesome-Audio-Visualizer 1.0.1 by Volkan Sah
+# -----------------------------------------------------------------------------
+# https://github.com/VolkanSah/Awesome-Audio-Visualizer/
 import pygame
 import os
 import sys
@@ -16,9 +20,13 @@ from tkinter import filedialog
 import librosa
 import librosa.display
 
+# new
+import subprocess
+from queue import Queue
+import wave
+
 
 # import dependence
-# Note:  await loading ! do not forget! Volkan! 
 # -----------------------------------------------------------------------------
 # 1. Audio Component:  class AudioDeviceManager, AudioProcessor in audio.py
 # -----------------------------------------------------------------------------
@@ -30,24 +38,15 @@ from fileprocessor import FileProcessor
 # -----------------------------------------------------------------------------------------------
 # 3. Management and UI Components : class SettingsManager, UIManager in mui.py
 # -----------------------------------------------------------------------------------------------
-import mui
 from mui import SettingsManager , UIManager , ScreenshotManager
 # -----------------------------------------------------------------------------
 # 4. Visualizer Effects - class Particle in particle.py
 # -----------------------------------------------------------------------------
 from particle import Particle
 # -----------------------------------------------------------------------------
-# import dependence end start main app core below
+# 6. Export functions - merge_video_audio , merge_video_audio in decoder.py
 # -----------------------------------------------------------------------------
-# 
-# -----------------------------------------------------------------------------
-# 5. Main Visualizer Class - class HotVisualizer in main.py (this file!)
-# -----------------------------------------------------------------------------
-
-# -----------------------------------------------------------------------------
-# 4. Visualizer Effects - class Particle in particle.py
-# -----------------------------------------------------------------------------
-from particle import Particle
+from decoder import merge_video_audio , merge_video_audio
 # -----------------------------------------------------------------------------
 # import dependence end start main app core below
 # -----------------------------------------------------------------------------
@@ -70,6 +69,8 @@ class HotVisualizer:
         self.settings = SettingsManager()
         self.ui = UIManager(self.screen, self.font)
         self.screenshot_manager = ScreenshotManager()
+        # Neu: Initialisiere den Export-Manager
+        self.export_manager = ExportManager(self)
         
         # Visualizer State
         self.time = 0
@@ -119,7 +120,7 @@ class HotVisualizer:
             rgb = colorsys.hsv_to_rgb(h, s, v)
             return tuple(int(c * 255) for c in rgb)
         return (255, 255, 255)
-
+# ----------------------------------------  draw_mode _x easyl mod this sections or ad more! ---------------------------------------------
     def draw_mode_0_circular_bars(self, fft_data):
         center_x, center_y = self.screen_width // 2, self.screen_height // 2
         bars = 120
@@ -206,6 +207,8 @@ class HotVisualizer:
                     color = self.get_color(alpha / 255, self.palettes[self.color_palette_index])
                     text = self.ui.small_font.render(char, True, color)
                     self.screen.blit(text, (drop['x'], y))
+# ----------------------------------------  draw_mode _x end ---------------------------------------------
+# ----------------------------------------  update class Particles stored in particles.py ----------------
 
     def update_particles(self):
         self.particles = [p for p in self.particles if p.update()]
@@ -254,7 +257,8 @@ class HotVisualizer:
             
             text2 = pygame.font.Font(None, 20).render(controls2, True, (200, 200, 200))
             self.screen.blit(text2, (10, self.screen_height - 25))
-    
+# ----------------------------------------  end class Particles stored in particles.py ----------------
+
     def run(self):
         running = True
         fullscreen = False
@@ -270,6 +274,8 @@ class HotVisualizer:
                         else: running = False
                     elif event.key == pygame.K_TAB: self.ui.show_settings = not self.ui.show_settings; self.ui.show_device_menu = False
                     elif event.key == pygame.K_d: self.ui.show_device_menu = not self.ui.show_device_menu; self.ui.show_settings = False
+                    elif event.key == pygame.K_r: self.export_manager.start_recording()
+                    elif event.key == pygame.K_e: self.export_manager.stop_recording("my_awesome_visualizer_video.mp4")
                     elif event.key == pygame.K_SPACE and not self.ui.show_settings and not self.ui.show_device_menu: self.mode = (self.mode + 1) % len(self.mode_names)
                     elif event.key == pygame.K_c and not self.ui.show_settings and not self.ui.show_device_menu: self.color_palette_index = (self.color_palette_index + 1) % len(self.palettes)
                     elif event.key == pygame.K_f:
@@ -329,10 +335,14 @@ class HotVisualizer:
             
             self.ui.draw_device_menu(self.device_manager.devices, current_device_idx, 50, 50)
             self.ui.draw_settings_overlay(self.settings, self.audio_processor)
+
+            # HIER ist der richtige Platz, um den Frame für die Aufnahme zu senden
+            self.export_manager.capture_frame(self.screen)
             
             pygame.display.flip()
             self.clock.tick(60)
             self.time += 1
+            
 
         self.audio_processor.stop()
         if self.file_processor: self.file_processor.stop()
@@ -340,10 +350,199 @@ class HotVisualizer:
         pygame.quit()
         sys.exit()
 
+# -----------------------------------------------------------------------------
+# 6. Export Manager
+# -----------------------------------------------------------------------------
 
+class ExportManager:
+    def __init__(self, visualizer):
+        self.visualizer = visualizer
+        self.is_recording = False
+        self.video_thread = None
+        self.audio_thread = None
+        self.video_process = None
+        self.audio_file = None
+        self.temp_video_path = "temp_video.mp4"
+        self.temp_audio_path = "temp_audio.wav"
+        self.start_time = None
+        self.frame_count = 0
 
+    def start_recording(self, output_filename="export.mp4"):
+        if self.is_recording:
+            print("Export läuft bereits.")
+            return
+        
+        if self.visualizer.audio_mode != "file":
+            print("Export nur im File-Modus möglich!")
+            return
+        
+        if not self.visualizer.file_processor.file_path:
+            print("Kein Audio-File geladen!")
+            return
+        
+        print("Starte Export...")
+        self.is_recording = True
+        self.output_filename = output_filename
+        self.start_time = time.time()
+        self.frame_count = 0
 
+        # VERBESSERTER FFmpeg-Command
+        cmd = [
+            'ffmpeg', '-y',
+            '-f', 'rawvideo',
+            '-vcodec', 'rawvideo',
+            '-s', f'{self.visualizer.screen_width}x{self.visualizer.screen_height}',
+            '-pix_fmt', 'rgb24',
+            '-r', '60',
+            '-i', '-',
+            '-c:v', 'libx264',
+            '-preset', 'fast',  # 'ultrafast' → 'fast' für bessere Qualität
+            '-crf', '18',       # Qualität hinzufügen (18 = sehr gut)
+            '-pix_fmt', 'yuv420p',  # Kompatibilität für alle Player
+            self.temp_video_path
+        ]
+        
+        print(f"🐛 FFmpeg Command: {' '.join(cmd)}")
+        
+        try:
+            self.video_process = subprocess.Popen(
+                cmd, 
+                stdin=subprocess.PIPE, 
+                stdout=subprocess.PIPE,  # stdout nicht verwerfen für Debug
+                stderr=subprocess.PIPE   # stderr nicht verwerfen für Debug
+            )
+            print("✅ FFmpeg-Prozess gestartet")
+        except Exception as e:
+            print(f"❌ FFmpeg-Start fehlgeschlagen: {e}")
+            return
+        
+        # Starte Audio-Thread
+        self.audio_thread = threading.Thread(target=self._record_audio_task)
+        self.audio_thread.daemon = True
+        self.audio_thread.start()
+        
+    def _record_audio_task(self):
+        """Audio vom geladenen File nehmen, nicht aufnehmen"""
+        try:
+            if (self.visualizer.audio_mode == "file" and 
+                self.visualizer.file_processor.file_path and 
+                os.path.exists(self.visualizer.file_processor.file_path)):
+                
+                # Original-Audio-File direkt kopieren
+                import shutil
+                shutil.copy2(self.visualizer.file_processor.file_path, self.temp_audio_path)
+                print("Original-Audio für Export kopiert")
+            else:
+                print("Kein Audio-File verfügbar - erstelle stille Audio-Spur")
+                # Fallback: stille Audio-Datei erstellen
+                self._create_silent_audio()
+                
+        except Exception as e:
+            print(f"Audio-Export Fehler: {e}")
+            self._create_silent_audio()
 
+    def _create_silent_audio(self):
+        """Erstellt eine stille WAV-Datei als Fallback"""
+        import wave
+        with wave.open(self.temp_audio_path, 'wb') as wav_file:
+            wav_file.setnchannels(2)  # Stereo
+            wav_file.setsampwidth(2)  # 16-bit
+            wav_file.setframerate(44100)
+            # 10 Sekunden stille Audio
+            wav_file.writeframes(b'\x00' * (44100 * 2 * 2 * 10))
+
+    def capture_frame(self, screen):
+        """Sendet einen Frame an FFmpeg."""
+        if not self.is_recording or not self.video_process:
+            return
+
+        # Auto-Stop wenn Audio fertig ist
+        if (self.visualizer.audio_mode == "file" and 
+            self.visualizer.file_processor.playback_state == "playing" and
+            not pygame.mixer.music.get_busy()):
+            
+            print("Audio beendet - stoppe Recording automatisch")
+            self.stop_recording()
+            return
+        
+        try:
+            # pygame Surface zu RGB-Array
+            frame = pygame.surfarray.array3d(screen)
+            
+            # WICHTIG: pygame gibt (width, height, channels), FFmpeg braucht (height, width, channels)
+            frame = frame.swapaxes(0, 1)  # Vertauscht width und height
+            
+            # Debug: Frame-Info ausgeben (nur beim ersten Frame)
+            if self.frame_count == 0:
+                print(f"🐛 Frame shape: {frame.shape}")
+                print(f"🐛 Screen size: {screen.get_size()}")
+                print(f"🐛 Expected: ({self.visualizer.screen_height}, {self.visualizer.screen_width}, 3)")
+            
+            # Frame an FFmpeg senden
+            self.video_process.stdin.write(frame.tobytes())
+            self.frame_count += 1
+            
+            # Debug: Fortschritt alle 60 Frames (1 Sekunde bei 60 FPS)
+            if self.frame_count % 60 == 0:
+                elapsed = time.time() - self.start_time
+                print(f"🎬 {self.frame_count} Frames aufgenommen ({elapsed:.1f}s)")
+            
+        except BrokenPipeError:
+            print("❌ FFmpeg Pipe gebrochen. Beende Aufnahme.")
+            self.stop_recording()
+        except Exception as e:
+            print(f"❌ Fehler beim Schreiben des Frames: {e}")
+            self.stop_recording()
+            
+    def stop_recording(self):
+        if not self.is_recording:
+            return
+
+        print("Beende Video- und Audio-Aufnahme...")
+        self.is_recording = False
+        
+        # Schließe Video-Pipe
+        if self.video_process:
+            self.video_process.stdin.close()
+            self.video_process.wait()
+
+        # Warte, bis der Audio-Thread fertig ist
+        if self.audio_thread:
+            self.audio_thread.join()
+
+        # Starte den Merger-Prozess in einem neuen Thread, um die UI nicht zu blockieren
+        merge_thread = threading.Thread(target=self._merge_files_task)
+        merge_thread.start()
+
+    def _merge_files_task(self):
+        """Task to merge video and audio in a separate thread."""
+        print("Starte den Merging-Prozess...")
+        
+        # Aufruf des externen decoder.py Skripts
+        cmd = [
+            sys.executable,  # Stellt sicher, dass das richtige Python-Executable verwendet wird
+            'decoder.py',
+            'merge',  # Das fehlte! decoder.py braucht den 'merge' subcommand
+            self.temp_video_path,
+            self.temp_audio_path,
+            '--output', self.output_filename
+        ]
+        
+        try:
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            print("Merging-Prozess abgeschlossen.")
+            print(f"✅ Finale Datei: {self.output_filename}")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Fehler beim Mergen: {e}")
+            print(f"Stderr: {e.stderr}")
+        
+        # Aufräumen
+        if os.path.exists(self.temp_video_path):
+            os.remove(self.temp_video_path)
+            print("Temp video gelöscht")
+        if os.path.exists(self.temp_audio_path):
+            os.remove(self.temp_audio_path)
+            print("Temp audio gelöscht")
 
 if __name__ == "__main__":
     visualizer = HotVisualizer()
