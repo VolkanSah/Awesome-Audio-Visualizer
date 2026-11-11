@@ -8,7 +8,9 @@ Born from passion, this project delivers a customizable and scalable visualizer 
 
 ---
 
+Demo VIdeo with basic patterns: https://youtu.be/zMVC19nWoFY
 
+---
 
 <details><summary>💡 Why this project?</summary>
 
