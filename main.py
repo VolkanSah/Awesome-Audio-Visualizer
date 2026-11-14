@@ -55,7 +55,17 @@ class HotVisualizer:
         self.beat_flash = 0
         self.particles = []
         self.mode = 0
-        self.mode_names = ["Circular Bars", "Waveform Tunnel", "Frequency Spiral", "Beat Explosion", "Matrix Rain"]
+        self.mode_names = [
+            "Circular Bars",
+            "Waveform Tunnel",
+            "Frequency Spiral",
+            "Beat Explosion",
+            "Matrix Rain",
+            "Synthwave Grid",
+            "Cyber Plexus",
+            "Liquid Core",
+            "3D Joy-Waves"
+        ]
         self.color_palette_index = 0
         self.palettes = ["fire", "electric", "ocean", "rainbow", "neon"]
 
@@ -63,7 +73,10 @@ class HotVisualizer:
         self.fps_history = deque(maxlen=60)
         self.tunnel_points = []
         self.matrix_drops = []
+        self.plexus_nodes = []
+        self.wave_history = deque(maxlen=35)
         self.init_matrix()
+        self.init_plexus()
 
         # AUDIO-MODUS-STATUS
         self.audio_mode = "live"
@@ -130,6 +143,7 @@ class HotVisualizer:
             root.destroy()
 
     def init_matrix(self):
+        self.matrix_drops.clear()
         for x in range(0, self.screen_width, 20):
             self.matrix_drops.append({
                 'x': x, 'y': random.randint(-500, 0),
@@ -137,8 +151,26 @@ class HotVisualizer:
                 'chars': [chr(random.randint(33, 126)) for _ in range(20)]
             })
 
+    def init_plexus(self):
+        self.plexus_nodes = [{
+            'x': random.uniform(0, self.screen_width),
+            'y': random.uniform(0, self.screen_height),
+            'vx': random.uniform(-1.5, 1.5),
+            'vy': random.uniform(-1.5, 1.5),
+            'band': i % 60
+        } for i in range(70)]
+
+    def get_freq_bands(self, fft_data):
+        """Teilt die FFT-Daten in Bass, Mitten und Höhen (normiert 0.0 bis 1.0) auf."""
+        if len(fft_data) == 0:
+            return 0.0, 0.0, 0.0
+        bass = min(1.0, float(np.mean(fft_data[:10])) / 120.0) if len(fft_data) >= 10 else 0.0
+        mids = min(1.0, float(np.mean(fft_data[10:60])) / 100.0) if len(fft_data) >= 60 else 0.0
+        highs = min(1.0, float(np.mean(fft_data[60:150])) / 80.0) if len(fft_data) >= 150 else 0.0
+        return bass, mids, highs
+
     def get_color(self, intensity, palette_name):
-        intensity = max(0, min(1, intensity))
+        intensity = max(0.0, min(1.0, float(intensity)))
         if palette_name == "fire":
             if intensity < 0.3: r = int(255 * intensity / 0.3); return (r, 0, 0)
             elif intensity < 0.6: g = int(255 * (intensity - 0.3) / 0.3); return (255, g, 0)
@@ -151,14 +183,17 @@ class HotVisualizer:
             rgb = colorsys.hsv_to_rgb(h, s, v)
             return tuple(int(c * 255) for c in rgb)
         return (255, 255, 255)
-# ----------------------------------------  draw_mode _x easyl mod this sections or ad more! ---------------------------------------------
-    def draw_mode_0_circular_bars(self, fft_data):
+
+    # ---------------------------------------- draw_mode_x section ---------------------------------------------
+    def draw_mode_0_circular_bars(self, fft_data, beat_detected=False):
+        if len(fft_data) == 0:
+            return
         center_x, center_y = self.screen_width // 2, self.screen_height // 2
         bars = 120
-        chunk_size = len(fft_data) // bars
+        chunk_size = max(1, len(fft_data) // bars)
         reduced_fft = [np.mean(fft_data[i:i+chunk_size]) for i in range(0, len(fft_data), chunk_size)][:bars]
         for i, amplitude in enumerate(reduced_fft):
-            angle = (i / bars) * 2 * math.pi
+            angle = (i / len(reduced_fft)) * 2 * math.pi
             inner_radius = 80 + math.sin(self.time * 0.02 + i * 0.1) * 20
             outer_radius = inner_radius + amplitude * 0.5
             inner_x, inner_y = center_x + inner_radius * math.cos(angle), center_y + inner_radius * math.sin(angle)
@@ -168,13 +203,18 @@ class HotVisualizer:
             width = max(1, int(3 + amplitude * 0.02))
             pygame.draw.line(self.screen, color, (inner_x, inner_y), (outer_x, outer_y), width)
 
-    def draw_mode_1_waveform_tunnel(self, fft_data):
+    def draw_mode_1_waveform_tunnel(self, fft_data, beat_detected=False):
         center_x, center_y = self.screen_width // 2, self.screen_height // 2
-        self.tunnel_points.append(fft_data[:200:5])
-        if len(self.tunnel_points) > 50: self.tunnel_points.pop(0)
+        if len(fft_data) > 0:
+            self.tunnel_points.append(fft_data[:200:5])
+        if len(self.tunnel_points) > 50:
+            self.tunnel_points.pop(0)
         for z, ring in enumerate(self.tunnel_points):
+            if len(ring) == 0:
+                continue
             z_scale = 1 - z / len(self.tunnel_points)
-            if z_scale <= 0: continue
+            if z_scale <= 0:
+                continue
             for i, amplitude in enumerate(ring):
                 angle = (i / len(ring)) * 2 * math.pi
                 radius = 50 + amplitude * 0.3 * z_scale
@@ -185,7 +225,7 @@ class HotVisualizer:
                 size = max(1, int(3 * z_scale))
                 pygame.draw.circle(self.screen, color, (int(x), int(y)), size)
 
-    def draw_mode_2_frequency_spiral(self, fft_data):
+    def draw_mode_2_frequency_spiral(self, fft_data, beat_detected=False):
         center_x, center_y = self.screen_width // 2, self.screen_height // 2
         for i, amplitude in enumerate(fft_data[::5]):
             angle = i * 0.2 + self.time * 0.05
@@ -198,7 +238,7 @@ class HotVisualizer:
                 size = max(1, int(2 + amplitude * 0.05))
                 pygame.draw.circle(self.screen, color, (int(x), int(y)), size)
 
-    def draw_mode_3_beat_explosion(self, fft_data, beat_detected):
+    def draw_mode_3_beat_explosion(self, fft_data, beat_detected=False):
         if beat_detected:
             center_x, center_y = self.screen_width // 2, self.screen_height // 2
             for _ in range(30):
@@ -208,25 +248,31 @@ class HotVisualizer:
                 color = self.get_color(random.random(), self.palettes[self.color_palette_index])
                 self.particles.append(Particle(center_x, center_y, vx, vy, 120, color))
             self.beat_flash = 30
-        
-        bar_width = self.screen_width // min(len(fft_data), 100) if len(fft_data) > 0 else self.screen_width
-        for i, amplitude in enumerate(fft_data[:100]):
-            bar_height = amplitude * 2
-            x, y = i * bar_width, self.screen_height - bar_height
+
+        num_bars = min(len(fft_data), 100)
+        for i in range(num_bars):
+            amplitude = fft_data[i]
+            bar_height = int(amplitude * 2)
+            x1 = int(i * self.screen_width / num_bars)
+            x2 = int((i + 1) * self.screen_width / num_bars)
+            y = self.screen_height - bar_height
             intensity = amplitude / 100
             color = self.get_color(intensity, self.palettes[self.color_palette_index])
-            pygame.draw.rect(self.screen, color, (x, y, bar_width - 1, bar_height))
-        
+            pygame.draw.rect(self.screen, color, (x1, y, max(1, x2 - x1 - 1), bar_height))
+
         if self.beat_flash > 0:
-            overlay = pygame.Surface((self.screen_width, self.screen_height)); overlay.set_alpha(self.beat_flash * 3); overlay.fill((255, 255, 255)); self.screen.blit(overlay, (0, 0))
+            overlay = pygame.Surface((self.screen_width, self.screen_height))
+            overlay.set_alpha(self.beat_flash * 3)
+            overlay.fill((255, 255, 255))
+            self.screen.blit(overlay, (0, 0))
             self.beat_flash -= 1
 
-    def draw_mode_4_matrix_rain(self, fft_data):
+    def draw_mode_4_matrix_rain(self, fft_data, beat_detected=False):
         for drop in self.matrix_drops:
             drop['y'] += drop['speed']
             if drop['y'] > self.screen_height:
                 drop['y'], drop['speed'] = random.randint(-200, -50), random.uniform(2, 8)
-        
+
         for i, drop in enumerate(self.matrix_drops):
             fft_index = i % len(fft_data) if len(fft_data) > 0 else 0
             brightness = min(255, fft_data[fft_index] * 2) if len(fft_data) > 0 else 50
@@ -238,8 +284,137 @@ class HotVisualizer:
                     color = self.get_color(alpha / 255, self.palettes[self.color_palette_index])
                     text = self.ui.small_font.render(char, True, color)
                     self.screen.blit(text, (drop['x'], y))
-# ----------------------------------------  draw_mode _x end ---------------------------------------------
-# ----------------------------------------  update class Particles stored in particles.py ----------------
+
+    def draw_mode_5_synthwave_grid(self, fft_data, beat_detected=False):
+        bass, mids, _ = self.get_freq_bands(fft_data)
+        pal = self.palettes[self.color_palette_index]
+        cx, cy = self.screen_width // 2, int(self.screen_height * 0.55)
+
+        # 1. Pulsierende Retro-Sonne
+        sun_radius = int(90 + bass * 60 + (15 if beat_detected else 0))
+        sun_color = self.get_color(0.8, pal)
+        pygame.draw.circle(self.screen, sun_color, (cx, cy - 40), sun_radius)
+        for i in range(1, 6):
+            stripe_y = cy - 40 + int(sun_radius * (i / 6.0))
+            pygame.draw.line(self.screen, (10, 10, 20), (cx - sun_radius, stripe_y), (cx + sun_radius, stripe_y), i * 2)
+
+        # 2. Frequenz-Berge am Horizont
+        points = [(0, cy)]
+        num_peaks = 80
+        for i in range(num_peaks):
+            idx = int((i / num_peaks) * min(len(fft_data), 120))
+            amp = fft_data[idx] if len(fft_data) > 0 else 0
+            px = int((i / (num_peaks - 1)) * self.screen_width)
+            center_mask = abs((i / num_peaks) - 0.5) * 2
+            py = cy - int(amp * 1.2 * (0.3 + 0.7 * center_mask))
+            points.append((px, py))
+        points.append((self.screen_width, cy))
+        pygame.draw.polygon(self.screen, (15, 15, 30), points)
+        pygame.draw.lines(self.screen, self.get_color(0.9, pal), False, points[1:-1], 2)
+
+        # 3. Bewegtes 3D-Grid am Boden
+        grid_color = self.get_color(0.4 + mids * 0.5, pal)
+        for i in range(-12, 13):
+            end_x = cx + i * (self.screen_width // 6)
+            pygame.draw.line(self.screen, grid_color, (cx + i * 15, cy), (end_x, self.screen_height), 1)
+
+        speed = (self.time * 0.03) % 1.0
+        for i in range(1, 15):
+            z = (i + speed) / 15.0
+            y = cy + int((z ** 2.5) * (self.screen_height - cy))
+            if cy < y < self.screen_height:
+                pygame.draw.line(self.screen, grid_color, (0, y), (self.screen_width, y), max(1, int(z * 3)))
+
+    def draw_mode_6_cyber_plexus(self, fft_data, beat_detected=False):
+        if not self.plexus_nodes:
+            self.init_plexus()
+
+        bass, _, _ = self.get_freq_bands(fft_data)
+        pal = self.palettes[self.color_palette_index]
+        speed_mult = 1.0 + bass * 3.0 + (4.0 if beat_detected else 0.0)
+        max_dist = 160 + int(bass * 60)
+
+        for n in self.plexus_nodes:
+            n['x'] = (n['x'] + n['vx'] * speed_mult) % self.screen_width
+            n['y'] = (n['y'] + n['vy'] * speed_mult) % self.screen_height
+
+        for i, n1 in enumerate(self.plexus_nodes):
+            amp = fft_data[n1['band']] if len(fft_data) > n1['band'] else 0
+            intensity = min(1.0, amp / 100.0)
+
+            for n2 in self.plexus_nodes[i+1:]:
+                dx, dy = n1['x'] - n2['x'], n1['y'] - n2['y']
+                dist_sq = dx * dx + dy * dy
+                if dist_sq < max_dist * max_dist:
+                    dist = math.sqrt(dist_sq)
+                    link_intensity = (1.0 - dist / max_dist) * (0.3 + intensity * 0.7)
+                    color = self.get_color(link_intensity, pal)
+                    pygame.draw.line(self.screen, color, (int(n1['x']), int(n1['y'])), (int(n2['x']), int(n2['y'])), 1)
+
+            node_color = self.get_color(min(1.0, 0.4 + intensity), pal)
+            radius = max(2, int(3 + intensity * 6))
+            pygame.draw.circle(self.screen, node_color, (int(n1['x']), int(n1['y'])), radius)
+
+    def draw_mode_7_liquid_core(self, fft_data, beat_detected=False):
+        cx, cy = self.screen_width // 2, self.screen_height // 2
+        pal = self.palettes[self.color_palette_index]
+        bass, _, _ = self.get_freq_bands(fft_data)
+
+        layers = [
+            (180, 0.8, 0.02, 0, 40),
+            (130, 0.6, -0.03, 40, 80),
+            (80,  0.4, 0.05, 80, 120)
+        ]
+
+        for idx, (base_r, scale, rot_speed, f_start, f_end) in enumerate(layers):
+            band = fft_data[f_start:f_end] if len(fft_data) >= f_end else [0] * 40
+            mirrored = list(band) + list(reversed(band))
+            points = []
+            num_pts = len(mirrored)
+            rot = self.time * rot_speed
+
+            for i, amp in enumerate(mirrored):
+                angle = (i / num_pts) * 2 * math.pi + rot
+                wobble = math.sin(angle * 4 + self.time * 0.1) * 10
+                r = base_r + bass * 40 + amp * scale + wobble
+                x = cx + r * math.cos(angle)
+                y = cy + r * math.sin(angle)
+                points.append((int(x), int(y)))
+
+            if len(points) > 2:
+                color = self.get_color(0.9 - idx * 0.3, pal)
+                fill_col = tuple(max(0, c // 5) for c in color)
+                pygame.draw.polygon(self.screen, fill_col, points)
+                pygame.draw.polygon(self.screen, color, points, width=3 + (2 if beat_detected else 0))
+
+    def draw_mode_8_joy_waves(self, fft_data, beat_detected=False):
+        points_count = 60
+        raw = fft_data[:points_count] if len(fft_data) >= points_count else np.zeros(points_count)
+        windowed = raw * np.hanning(len(raw))
+        self.wave_history.append(windowed)
+
+        pal = self.palettes[self.color_palette_index]
+        margin_x = int(self.screen_width * 0.18)
+        usable_w = self.screen_width - 2 * margin_x
+        start_y = int(self.screen_height * 0.22)
+        row_spacing = int((self.screen_height * 0.65) / 35)
+
+        for row_idx, wave in enumerate(self.wave_history):
+            depth = row_idx / max(1, len(self.wave_history) - 1)
+            base_y = start_y + row_idx * row_spacing
+            line_points = []
+
+            for i, amp in enumerate(wave):
+                x = margin_x + int((i / (points_count - 1)) * usable_w)
+                y = base_y - int(amp * 1.3 * (0.4 + 0.6 * depth))
+                line_points.append((x, y))
+
+            if len(line_points) > 1:
+                poly_points = [(margin_x, base_y + 20)] + line_points + [(margin_x + usable_w, base_y + 20)]
+                pygame.draw.polygon(self.screen, (10, 10, 20), poly_points)
+                color = self.get_color(depth, pal)
+                pygame.draw.lines(self.screen, color, False, line_points, max(1, int(depth * 3)))
+    # ---------------------------------------- draw_mode_x end ---------------------------------------------
 
     def update_particles(self):
         self.particles = [p for p in self.particles if p.update()]
@@ -386,6 +561,18 @@ class HotVisualizer:
         fp = self.file_processor
         ex = self.export_manager
 
+        draw_modes = [
+            self.draw_mode_0_circular_bars,
+            self.draw_mode_1_waveform_tunnel,
+            self.draw_mode_2_frequency_spiral,
+            self.draw_mode_3_beat_explosion,
+            self.draw_mode_4_matrix_rain,
+            self.draw_mode_5_synthwave_grid,
+            self.draw_mode_6_cyber_plexus,
+            self.draw_mode_7_liquid_core,
+            self.draw_mode_8_joy_waves,
+        ]
+
         print("🔥 AWESOME AUDIO VISUALIZER STARTED! 🔥")
 
         while running:
@@ -422,6 +609,8 @@ class HotVisualizer:
                             self.screen = pygame.display.set_mode((0, 0) if fullscreen else (1200, 800), pygame.FULLSCREEN if fullscreen else 0)
                             self.screen_width, self.screen_height = self.screen.get_size()
                             self.ui.screen = self.screen
+                            self.init_matrix()
+                            self.init_plexus()
                     elif key == pygame.K_s: self.screenshot_manager.capture_and_save(self.screen)
                     elif key in (pygame.K_q, pygame.K_w) and self.audio_mode == "live":
                         change = -0.1 if key == pygame.K_q else 0.1
@@ -486,9 +675,7 @@ class HotVisualizer:
 
             # ---- draw: visuals + title (these two end up in the export)
             self.screen.fill((10, 10, 20))
-            draw_modes = [self.draw_mode_0_circular_bars, self.draw_mode_1_waveform_tunnel, self.draw_mode_2_frequency_spiral,
-                          lambda d: self.draw_mode_3_beat_explosion(d, beat_detected), self.draw_mode_4_matrix_rain]
-            draw_modes[self.mode](fft_data)
+            draw_modes[self.mode](fft_data, beat_detected)
             self.update_particles()
             self.draw_title_overlay()
 
