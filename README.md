@@ -232,7 +232,21 @@ This project showcases the **true power of Pygame** for modern desktop applicati
 - [x] Simple and fast :D Zero Electron bloat + solid 60 FPS (perfect for live music halls, clubs, and big screens behind your turntables :D).
 - [ ] Coming soon: Native Full HD and 4K support for Live Mode and Video Exports.
 
+
 </details>
+
+
+---
+
+
+### **Custom Visuals (AI-Ready Architecture):**
+Feature for you all: Want your own custom effects? Just feed `main.py` to your favorite AI and tell it:
+> *"Look at the `draw_mode_x` section in `main.py`. Write a new `draw_mode` effect for me. DO NOT touch the rest of the code or any other files!"*
+
+It will understand the structure immediately. Just keep it on a short leash - AI is stupid sometimes.
+> have fun 😸
+
+
 
 
 
