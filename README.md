@@ -1,5 +1,5 @@
 # 🎧 Awesome-Audio-Visualizer
-#### v. 1.0.0 
+#### v. 1.1.0 
 ###### AI compatible - teste, works!
 > German verison, sorry.. soon multi lingua.. i craft always in german first.
 > 
@@ -9,6 +9,7 @@ Born from passion, this project delivers a customizable and scalable visualizer 
 ---
 
 Demo VIdeo with basic patterns: https://youtu.be/zMVC19nWoFY
+> see screenshot_folder for new draws 
 
 ---
 
@@ -215,6 +216,24 @@ This project showcases the **true power of Pygame** for modern desktop applicati
 > While others struggle with Electron memory issues, we deliver buttery-smooth 60+ FPS experiences. Feel the difference! 💪
 
 </details>
+
+
+<details>
+<summary>Roadmap</summary>
+
+- [x] 2-3 years ago: Crafted a live-only visualizer. Friends wanted more features. Okay, if I find the time, I'll build it.
+- [x] 1 year later: F***, the exporter didn't work? I didn't need it myself, but... still shit.
+- [x] Another year later: Saw people on GitHub actually liked the project. Had to fix it.
+- [x] Refused to settle for stupid, broken workarounds.
+- [x] A few months later: Aha, had an idea! Wanted it raw and rock-solid. Teamed up with Claude AI and we fixed it together. Pure old-school code now - no overhyped Electron shit!
+- [x] It's alive! (It was alive before, too, but we only used it in Live Mode with our own private visuals. Sorry!)
+- [x] Okay, okay - officially released!
+- [x] Played around with gemini-4-argon-high to see if it understands the code and can craft new visualizer modes.
+- [x] Simple and fast :D Zero Electron bloat + solid 60 FPS (perfect for live music halls, clubs, and big screens behind your turntables :D).
+- [ ] Coming soon: Native Full HD and 4K support for Live Mode and Video Exports.
+
+</details>
+
 
 
 ---
