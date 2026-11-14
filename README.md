@@ -217,9 +217,9 @@ This project showcases the **true power of Pygame** for modern desktop applicati
 
 </details>
 
+---
 
-<details>
-<summary>Roadmap</summary>
+<details><summary>Roadmap</summary>
 
 - [x] 2-3 years ago: Crafted a live-only visualizer. Friends wanted more features. Okay, if I find the time, I'll build it.
 - [x] 1 year later: F***, the exporter didn't work? I didn't need it myself, but... still shit.
